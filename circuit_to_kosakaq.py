@@ -1,42 +1,75 @@
 import json
 
-from numpy import pi
-
 
 
 def _experiment_to_seq(circuit):
+    """
+    Use with two or more qubits
+    
     count = 0
     qubit_map = {}
     for bit in circuit.qubits:
         qubit_map[bit] = count
         count += 1
+    """
+    if circuit.qubits >= 2:
+        raise Exception("Only one qubit can be used")
     ops = []
     meas = 0
     for instruction in circuit.data:
         inst = instruction[0]
+        """
+        Use with two or more qubits
+        
         qubits = [qubit_map[bit] for bit in instruction[1]]
-        if inst.name == 'rx':
+        """
+        if inst.name == 'i':
+            name = 'I'
+        elif inst.name == 'x':
             name = 'X'
-        elif inst.name == 'ry':
+        elif inst.name == 'y':
             name = 'Y'
-        elif inst.name == 'rz':
+        elif inst.name == 'z':
             name = 'Z'
+        elif inst.name == 'h':
+            name = 'H'
+        elif inst.name == 's':
+            name = 'S'
+        elif inst.name == 'sdg':
+            name = 'Sdg'
+        elif inst.name == 'sx':
+            name = 'SX'
+        elif inst.name == 'sxdg':
+            name = 'SXdg'
+        elif inst.name == 'sy':
+            name = 'SY'
+        elif inst.name == 'sydg':
+            name = 'SYdg'
         elif inst.name == 'measure':
             meas += 1
             continue
         elif inst.name == 'barrier':
             continue
         else:
-            raise Exception("Operation '%s' outside of basis rx, ry" %
-                            inst.name)
+            raise Exception("Operation '%s' outside of basis i, x, y, z, h, s, sdg, sx, sxdg, sy, sydg" %inst.name)
+        """
+        use with xr gate 
+        
         exponent = inst.params[0] / pi
         # hack: split X into X**0.5 . X**0.5
         if name == 'X' and exponent == 1.0:
             ops.append((name, float(0.5), qubits))
             ops.append((name, float(0.5), qubits))
         else:
+        """
+        """
+        use with two or more qubits
+        
             # (op name, exponent, [qubit index])
             ops.append((name, float(exponent), qubits))
+        """
+        ops.append(name)
+        
     if not meas:
         raise ValueError('Circuit must have at least one measurements.')
     return json.dumps(ops)
