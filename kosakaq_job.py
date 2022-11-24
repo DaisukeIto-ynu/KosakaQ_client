@@ -68,6 +68,8 @@ class KosakaQJob(JobV1):
         for bit in self.qobj.qubits:
             qubit_map[bit] = count
             count += 1
+        if count >= 2:
+            raise JobError('This system is not accepted for more than 2 qubits.')
         clbit_map = {}
         count = 0
         for bit in self.qobj.clbits:
