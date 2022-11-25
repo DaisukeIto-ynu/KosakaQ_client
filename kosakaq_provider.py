@@ -7,6 +7,7 @@ Created on Thu Nov 17 15:00:00 2022
 
 import requests
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
+from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
 
 class KosakaQProvider(Provider): #抽象クラスからの継承としてproviderクラスを作る
 
