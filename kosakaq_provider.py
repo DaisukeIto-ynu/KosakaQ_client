@@ -38,8 +38,15 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         戻り値:
             list[Backend]:　フィルタリング基準に合うバックエンドたちのリスト
         """
+        self._backend[] #availableなバックエンドクラスのbkednameを入れていくためのリスト
         res = requests.get(self.url + self.wjson, headers={"Authorization": "access_token" + self.access_token})
-        response = res.json()
+        response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable'}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
+        
+        if response[0]['bkedstatus'] ='available'
+            self._backend.append(response[0][bkedname]) 
+        if response[1]['bkedstatus'] ='available'
+            self._backend.append(response[1][bkedname]) 
+        return self._backend#responseのstatusがavailableかつフィルタリングにあうバックエンドたちのバックエンドクラスのインスタンスリストを返す
     
     def __eq__(self, other): #等号の定義
         """Equality comparison.
