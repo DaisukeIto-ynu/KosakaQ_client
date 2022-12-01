@@ -42,9 +42,9 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         res = requests.get(self.url + self.wjson, headers={"Authorization": "access_token" + self.access_token})
         response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable'}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
         
-        if response[0]['bkedstatus'] ='available'
+        if response[0]['bkedstatus'] =='available'
             self._backend.append(response[0][bkedname]) 
-        if response[1]['bkedstatus'] ='available'
+        if response[1]['bkedstatus'] =='available'
             self._backend.append(response[1][bkedname]) 
         return self._backend#responseのstatusがavailableかつフィルタリングにあうバックエンドたちのバックエンドクラスのインスタンスリストを返す
     
