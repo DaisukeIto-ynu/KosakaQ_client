@@ -31,6 +31,8 @@ class KosakaQJob(JobV1):
         self.memory_mapping = self._build_memory_mapping()
 
     def _wait_for_result(self, timeout=None, wait=5):
+        if wait < 5:
+            raise JobError('Wait time must be 5 or more')
         start_time = time.time()
         result = None
         header = {
@@ -41,7 +43,7 @@ class KosakaQJob(JobV1):
             elapsed = time.time() - start_time
             if timeout and elapsed >= timeout:
                 raise JobTimeoutError('Timed out waiting for result')
-            result = requests.put(
+            result = requests.get(
                 self._backend.url,
                 data={'id': self._job_id,
                       'access_token': self._backend._provider.access_token},
@@ -69,7 +71,7 @@ class KosakaQJob(JobV1):
             qubit_map[bit] = count
             count += 1
         if count >= 2:
-            raise JobError('This system is not accepted for more than 2 qubits.')
+            raise JobError('This system is not accepted for 2 or more qubits.')
         clbit_map = {}
         count = 0
         for bit in self.qobj.clbits:
