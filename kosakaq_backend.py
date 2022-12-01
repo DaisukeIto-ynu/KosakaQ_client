@@ -34,8 +34,6 @@ class KosakaQBackend(Backend):
             max_experiments=1,
             ):
         super().__init__(provider=provider, name=name)
-        self.provider = provider
-        self.name = name
         self.url = url
         self.version = version
         self.n_qubits = n_qubits
@@ -128,7 +126,7 @@ class KosakaQBackend(Backend):
             "Ocp-Apim-Subscription-Key": self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=kosakaq_json, headers=header)
+        res = requests.post(self.url, data=kosakaq_json, headers=header)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
