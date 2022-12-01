@@ -20,7 +20,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
     
 
   
-    def get_backends(self, name=None, **kwargs): #ユーザーに"Rabi"などを引数として入れてもらう、もしbackendsメソッドのreturnにRabiがあればインスタンスを作れる
+    def get_backend(self, name=None, **kwargs): #ユーザーに"Rabi"などを引数として入れてもらう、もしbackendsメソッドのreturnにRabiがあればインスタンスを作れる
         
         backends = self.backends(name, **kwargs) #backendsという変数にbackendsメソッドのreturnのリストを代入
         if len(backends) > 1:
