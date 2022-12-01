@@ -8,12 +8,13 @@ Created on Thu Nov 17 15:00:00 2022
 import requests
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
 from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
+from .kosakaq_backend import KosakaQBackend 
 
 class KosakaQProvider(Provider): #抽象クラスからの継承としてproviderクラスを作る
 
     def __init__(self, access_token=None):#引数はself(必須)とtoken(認証が必要な場合)、ユーザーに自分でコピペしてもらう
         super().__init__() #ソースコードは（）空なので真似した
-        self.access_token = access_token #トークン定義
+        self.access_token = access_token #トークン定義  
         self.name = 'kosakaq_provider' #nameという変数を右辺に初期化、このproviderクラスの名づけ
         self.url = 'https://192.168.11.156' #リンク変更可能
         self.wjson = '/api/backends.json' #jsonに何を入れてサーバーに送るか
@@ -38,14 +39,13 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         戻り値:
             list[Backend]:　フィルタリング基準に合うバックエンドたちのリスト
         """
-        self._backend[] #availableなバックエンドクラスのbkednameを入れていくためのリスト
+        self._backend=[] #availableなバックエンドクラスのbkednameを入れていくためのリスト
         res = requests.get(self.url + self.wjson, headers={"Authorization": "access_token" + self.access_token})
         response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable'}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
         
-        if response[0]['bkedstatus'] =='available'
-            self._backend.append(response[0][bkedname]) 
-        if response[1]['bkedstatus'] =='available'
-            self._backend.append(response[1][bkedname]) 
+        for i in range(len(response)):   
+            if response[i]['bkedstatus'] =='available':
+                self._backend.append(KosakaQBackend(self, response[i]['bkedname'], self.url, response[i]['bkedversion'], response[i]['bkednqubits'], 4096, 1))
         return self._backend#responseのstatusがavailableかつフィルタリングにあうバックエンドたちのバックエンドクラスのインスタンスリストを返す
     
     def __eq__(self, other): #等号の定義
