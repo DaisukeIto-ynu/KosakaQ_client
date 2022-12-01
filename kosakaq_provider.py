@@ -19,7 +19,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         super().__init__() #ソースコードは（）空なので真似した
         self.access_token = access_token #トークン定義  
         self.name = 'kosakaq_provider' #nameという変数を右辺に初期化、このproviderクラスの名づけ
-        self.url = 'https://192.168.11.85' #リンク変更可能
+        self.url = 'http://192.168.11.85' #リンク変更可能
         self.wjson = '/api/backends.json' #jsonに何を入れてサーバーに送るか
     
 
