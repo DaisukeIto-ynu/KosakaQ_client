@@ -24,14 +24,14 @@ from KosakaQbackend import KosakaQbackend
 from job.job_monitor import job_monitor
 
 class Red_calibration():
-    def __init__(self):
+    def __init__(self, backend: KosakaQbackend):
+        self.backend = backend
         self.mode = None
         self.job_num = 0
         self.job = []
         self.mode = []
         self.calibration = []
         self.result = []
-        self.backend = KosakaQbackend("rabi")
     
     def run(self, mode):  # 大輔が作ります
         """
