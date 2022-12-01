@@ -43,7 +43,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
             list[Backend]:　フィルタリング基準に合うバックエンドたちのリスト
         """
         self._backend=[] #availableなバックエンドクラスのbkednameを入れていくためのリスト
-        res = requests.get(self.url + self.wjson, headers={"Authorization": "access_token " + self.access_token})
+        res = requests.get(self.url + self.wjson, headers={"Authorization": "token " + self.access_token})
         response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable'}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
         
         for i in range(len(response)):   
