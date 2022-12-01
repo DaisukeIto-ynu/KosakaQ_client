@@ -41,17 +41,17 @@ def _experiment_to_seq(circuit):
             name = 'SX'
         elif inst.name == 'sxdg':
             name = 'SXdg'
-        elif inst.name == 'sy':
-            name = 'SY'
-        elif inst.name == 'sydg':
-            name = 'SYdg'
+        #elif inst.name == 'sy':
+        #   name = 'SY'
+        #elif inst.name == 'sydg':
+        #   name = 'SYdg'
         elif inst.name == 'measure':
             meas += 1
             continue
         elif inst.name == 'barrier':
             continue
         else:
-            raise Exception("Operation '%s' outside of basis i, x, y, z, h, s, sdg, sx, sxdg, sy, sydg" %inst.name)
+            raise Exception("Operation '%s' outside of basis i, x, y, z, h, s, sdg, sx, sxdg, measure" %inst.name)
         """
         use with xr gate 
         
