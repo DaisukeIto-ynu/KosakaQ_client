@@ -271,8 +271,8 @@ class Red_calibration():
             raise KosakaQRedcalibrationError('E1E2です')
             
         elif self.mode[job_num - 1] == "Ey":  # Eyの場合
-            fre_y1 = copy.deepcopy[self.result[job_num - 1][0]]  # 縦軸の値
-            cou_x1 = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸の値
+            fre_y1 = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸の値
+            cou_x1 = copy.deepcopy[self.result[job_num - 1][1]]  # 縦軸の値
             
             #ローレンツ関数の初期値　beta = [バックグラウンドの強度, ローレンツ関数の強度, 線幅, ピーク位置]
             beta = np.array([300, 2700000, 300, 4.70479295e+08])
@@ -282,27 +282,27 @@ class Red_calibration():
             delta = 2*tolerance
             alpha = 1
             while np.linalg.norm(delta) > tolerance:
-                F = fre_y1-(beta[0]+beta[1]/(beta[2]+pow(cou_x1+beta[3],2)))
+                F = cou_x1-(beta[0]+beta[1]/(beta[2]+pow(fre_y1+beta[3],2)))
                 J = np.zeros((len(F), len(beta)))  # 有限差分ヤコビアン
                 for jj in range(0, len(beta)):
                     dBeta = np.zeros(beta.shape)
                     dBeta[jj] = epsilon
-                    J[:, jj] = (fre_y1-((beta[0]+dBeta[0])+(beta[1]+dBeta[1])/((beta[2]+dBeta[2])+pow(cou_x1+(beta[3]+dBeta[3]),2)))-F)/epsilon
+                    J[:, jj] = (cou_x1-((beta[0]+dBeta[0])+(beta[1]+dBeta[1])/((beta[2]+dBeta[2])+pow(fre_y1+(beta[3]+dBeta[3]),2)))-F)/epsilon
                 delta = -np.linalg.pinv(J).dot(F)  # 探索方向
                 beta = beta + alpha*delta
             
-            # Ey_frequencyはフィッティング後の縦軸のリスト
-            Ey1_frequency = beta[0]+beta[1]/(beta[2]+pow(cou_x1+beta[3],2))
-            return Ey1_frequency
+            # Ey1_countはフィッティング後の縦軸のリスト
+            Ey1_count = beta[0]+beta[1]/(beta[2]+pow(fre_y1+beta[3],2))
+            return Ey1_count
         
         
         elif self.mode[job_num - 1] == "all":  # 全体の場合
-            fre_y2 = copy.deepcopy[self.result[job_num - 1][0]]  # 縦軸全体の値
-            cou_x2 = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸全体の値
+            fre_y2 = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸全体の値
+            cou_x2 = copy.deepcopy[self.result[job_num - 1][1]]  # 縦軸全体の値
             
             #Eyのみを切り取る
-            cou_x2 = cou_x2[350:430]
             fre_y2 = fre_y2[350:430]
+            cou_x2 = cou_x2[350:430]
             
             #ローレンツ関数の初期値　beta = [バックグラウンドの強度, ローレンツ関数の強度, 線幅, ピーク位置]
             beta = np.array([300, 2700000, 300, 4.70479295e+08])
@@ -312,19 +312,15 @@ class Red_calibration():
             delta = 2*tolerance
             alpha = 1
             while np.linalg.norm(delta) > tolerance:
-                F = fre_y2-(beta[0]+beta[1]/(beta[2]+pow(cou_x2+beta[3],2)))
+                F = cou_x2-(beta[0]+beta[1]/(beta[2]+pow(fre_y2+beta[3],2)))
                 J = np.zeros((len(F), len(beta)))  # 有限差分ヤコビアン
                 for jj in range(0, len(beta)):
                     dBeta = np.zeros(beta.shape)
                     dBeta[jj] = epsilon
-                    J[:, jj] = (fre_y2-((beta[0]+dBeta[0])+(beta[1]+dBeta[1])/((beta[2]+dBeta[2])+pow(cou_x2+(beta[3]+dBeta[3]),2)))-F)/epsilon
+                    J[:, jj] = (cou_x2-((beta[0]+dBeta[0])+(beta[1]+dBeta[1])/((beta[2]+dBeta[2])+pow(fre_y2+(beta[3]+dBeta[3]),2)))-F)/epsilon
                 delta = -np.linalg.pinv(J).dot(F)  # 探索方向
                 beta = beta + alpha*delta
             
-            # Ey_frequencyはフィッティング後の縦軸のリスト
-            Ey1_frequency = beta[0]+beta[1]/(beta[2]+pow(cou_x2+beta[3],2))
-            return Ey1_frequency
-        
-        
-        
-        
+            # Ey2_countはフィッティング後の縦軸のリスト
+            Ey2_count = beta[0]+beta[1]/(beta[2]+pow(fre_y2+beta[3],2))
+            return Ey2_count
