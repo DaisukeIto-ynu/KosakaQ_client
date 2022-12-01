@@ -5,10 +5,13 @@ Created on Thu Nov 17 15:00:00 2022
 @author: Yokohama National University, Kosaka Lab
 """
 
+import sys
+
+sys.path.append('.')
 import requests
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
 from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
-from .kosakaq_backend import KosakaQBackend 
+from kosakaq_backend import KosakaQBackend 
 
 class KosakaQProvider(Provider): #抽象クラスからの継承としてproviderクラスを作る
 
