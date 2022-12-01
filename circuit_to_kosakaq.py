@@ -98,7 +98,7 @@ def circuit_to_KosakaQ(circuits, access_token, shots=4096):
         'data': seqs,
         'access_token': access_token,
         'repetitions': shots,
-        'no_qubits': circuits.num_qubits,
+        # 'no_qubits': circuits.num_qubits,
     }
     out_json.append(out_dict)
     return out_json
