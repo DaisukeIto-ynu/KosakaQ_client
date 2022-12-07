@@ -57,5 +57,11 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         equal. Subclassed providers can override this behavior.
         """
         return type(self).__name__ == type(other).__name__
-    
 
+"""import sys
+
+sys.path.append("自分のPCのkosakaQのpath")
+
+from kosakaq_provider import KosakaQProvider
+でインポートできたらOK
+"""

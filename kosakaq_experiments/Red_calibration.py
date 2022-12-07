@@ -177,8 +177,6 @@ class Red_calibration():
 
     def calibration(self, job_num = 0):
         """
-        
-
         Parameters
         ----------
         job_num : TYPE, optional
@@ -197,7 +195,7 @@ class Red_calibration():
             i = 0#whileのためのカウント用i
             while i<= 91:#101個なので91まで
                 
-                x = np.array(list1)#numpyのarrayにリストを入れる
+                x = np.array(list1)#numpyのarrayにリストを入れる,arrayだとベクトルになる。
                 y = np.array(list2)#xと同様
 
                 def katamuki(x, y):#傾きを求める関数
@@ -236,6 +234,7 @@ class Red_calibration():
         #list1,2,3で頂点の探し方を考える。範囲絞っての最大値or極値
         
         # runをまだ実行してなかったら(self.mode == None)、エラーを返す。
+        
         pass
     
     

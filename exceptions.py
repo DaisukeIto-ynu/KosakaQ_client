@@ -65,6 +65,12 @@ class KosakaQProviderError(KosakaQAccountError):
     pass
 
 
+class KosakaQTokenError(KosakaQProviderError):
+     """Errors for APItoken mistakes"""
+    pass
+
+
+
 class KosakaQBackendError(KosakaQError):
     """Base class for errors raised by the backend modules."""
     pass
@@ -112,4 +118,6 @@ class KosakaQRedcalibrationError(KosakaQError):
 
 class RedCalibrationError(KosakaQError):
     """Error raised when red calibration is not done correctly."""
+    pass
+
 
