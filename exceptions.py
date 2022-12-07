@@ -112,4 +112,13 @@ class KosakaQRedcalibrationError(KosakaQError):
 
 class RedCalibrationError(KosakaQError):
     """Error raised when red calibration is not done correctly."""
+    pass
+
+class KosakaQRabicalibrationError(KosakaQError):
+    """Error raised in Rabi_calibration.py."""
+    pass
+
+class RabiCalibrationError(KosakaQError):
+    """Error raised when rabi calibration is not done correctly."""
+    pass
 
