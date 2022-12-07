@@ -11,7 +11,7 @@ sys.path.append('.')
 import requests
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
 from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
-from kosakaq_backend import KosakaQBackend 
+from .kosakaq_backend import KosakaQBackend 
 
 class KosakaQProvider(Provider): #抽象クラスからの継承としてproviderクラスを作る
 
@@ -19,7 +19,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         super().__init__() #ソースコードは（）空なので真似した
         self.access_token = access_token #トークン定義  
         self.name = 'kosakaq_provider' #nameという変数を右辺に初期化、このproviderクラスの名づけ
-        self.url = 'https://192.168.11.160' #リンク変更可能
+        self.url = 'http://192.168.11.85' #リンク変更可能
         self.wjson = '/api/backends.json' #jsonに何を入れてサーバーに送るか
     
 
@@ -43,7 +43,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
             list[Backend]:　フィルタリング基準に合うバックエンドたちのリスト
         """
         self._backend=[] #availableなバックエンドクラスのbkednameを入れていくためのリスト
-        res = requests.get(self.url + self.wjson, headers={"Authorization": "access_token" + self.access_token})
+        res = requests.get(self.url + self.wjson, headers={"Authorization": "token " + self.access_token})
         response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable'}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
         
         for i in range(len(response)):   
