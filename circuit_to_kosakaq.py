@@ -95,6 +95,7 @@ def circuit_to_KosakaQ(circuits, access_token, shots=4096, backend):
         circuits = circuits[0]
     seqs = _experiment_to_seq(circuits)
     out_dict = {
+        'experiment': 'circuit',
         'data': seqs,
         'access_token': access_token,
         'repetitions': shots,
