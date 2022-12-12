@@ -75,7 +75,7 @@ def _experiment_to_seq(circuit):
     return json.dumps(ops)
 
 
-def circuit_to_KosakaQ(circuits, access_token, shots=4096, backend):
+def circuit_to_KosakaQ(circuits, access_token, backend, shots=4096):
     """Return a list of json payload strings for each experiment in a qobj
 
     The output json format of an experiment is defined as follows:
