@@ -132,3 +132,6 @@ class KosakaQBackend(Backend):
             raise Exception
         job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
         return job
+    
+    def backend(self):
+        return self._backend
