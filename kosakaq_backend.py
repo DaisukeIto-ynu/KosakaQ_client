@@ -130,5 +130,5 @@ class KosakaQBackend(Backend):
         response = res.json()
         if 'id' not in response:
             raise Exception
-        job = kosakaq_job.KosakaQJob(self, response['id'], qobj=circuit)
+        job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
         return job
