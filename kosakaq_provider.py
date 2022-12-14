@@ -57,9 +57,14 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         response = res.json() #[{'id': 1, 'bkedid': 0, 'bkedname': 'Rabi', 'bkedstatus': 'unavailable','detail': 'Authentication credentials were not provided',...}, {'id': 2, 'bkedid': 1, 'bkedname': 'Unicorn', 'bkedstatus': 'available'}]
         if 'detail' in response[0]: #トークンが違ったらdetailの辞書一つだけがresponseのリストに入っていることになる
             raise KosakaQTokenError('access_token was wrong') #トークン間違いを警告
-        for i in range(len(response)):   
+        for i in range(len(response)):
             if response[i]['bkedstatus'] =='available':
-                self._backend.append(KosakaQBackend(self, response[i]['bkedname'], self.url, response[i]['bkedversion'], response[i]['bkednqubits'], 4096, 1))
+                if name == None:
+                    self._backend.append(KosakaQBackend(self, response[i]['bkedname'], self.url, response[i]['bkedversion'], response[i]['bkednqubits'], 4096, 1))
+                elif name == response[i]['bkedname']:
+                    self._backend.append(KosakaQBackend(self, response[i]['bkedname'], self.url, response[i]['bkedversion'], response[i]['bkednqubits'], 4096, 1)  )  
+                else:
+                    pass
         return self._backend#responseのstatusがavailableかつフィルタリングにあうバックエンドたちのバックエンドクラスのインスタンスリストを返す
     
     #過去に行ったjobをサーバーから条件指定して取り出す、jobのリストを返す
