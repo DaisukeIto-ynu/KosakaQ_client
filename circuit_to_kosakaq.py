@@ -12,7 +12,7 @@ def _experiment_to_seq(circuit):
         qubit_map[bit] = count
         count += 1
     """
-    if circuit.qubits >= 2:
+    if len(circuit.qubits) >= 2:
         raise Exception("Only one qubit can be used")
     ops = []
     meas = 0
