@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 17 15:00:00 2022
-
 @author: Yokohama National University, Kosaka Lab
 """
 import warnings
@@ -34,8 +33,6 @@ class KosakaQBackend(Backend):
             max_experiments=1,
             ):
         super().__init__(provider=provider, name=name)
-        self.provider = provider
-        self.name = name
         self.url = url
         self.version = version
         self.n_qubits = n_qubits
@@ -122,16 +119,15 @@ class KosakaQBackend(Backend):
         if out_shots > self.configuration().max_shots:
             raise ValueError('Number of shots is larger than maximum '
                              'number of shots')
-        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(
-            circuit, self._provider.access_token, shots=out_shots)[0]
+        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
         header = {
-            "Ocp-Apim-Subscription-Key": self._provider.access_token,
+            "Authorization": "token " + self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=kosakaq_json, headers=header)
+        res = requests.post(self.url, data=kosakaq_json, headers=header)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
             raise Exception
-        job = kosakaq_job.KosakaQJob(self, response['id'], qobj=circuit)
+        job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
         return job
