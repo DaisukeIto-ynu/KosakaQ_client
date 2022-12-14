@@ -32,4 +32,6 @@ qc.measure(q[0], c[0])
 
 qc.draw()
 
-backend.run(qc)
+job = backend.run(qc)
+
+print(job)
