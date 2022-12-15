@@ -119,12 +119,12 @@ class KosakaQBackend(Backend):
         if out_shots > self.configuration().max_shots:
             raise ValueError('Number of shots is larger than maximum '
                              'number of shots')
-        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
+        kosakaq_json = circuit_to_kosakaq.circuit_to_KosakaQ(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
         header = {
             "Authorization": "token " + self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.post(self.url, data=kosakaq_json, headers=header)
+        res = requests.post(self.url+r"/job/", data=kosakaq_json, headers=header)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
