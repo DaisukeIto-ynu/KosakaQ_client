@@ -36,23 +36,24 @@ class KosakaQJob(JobV1):
         start_time = time.time()
         result = None
         header = {
-            "Ocp-Apim-Subscription-Key": self._backend._provider.access_token,
-            "SDK": "qiskit"
+            "Authorization": "Token "+self.access_token
         }
         while True:
             elapsed = time.time() - start_time
             if timeout and elapsed >= timeout:
                 raise JobTimeoutError('Timed out waiting for result')
             result = requests.get(
-                self._backend.url,
-                data={'id': self._job_id,
-                      'access_token': self._backend._provider.access_token},
-                headers=header
+                self._backend.url + ('/job/'),
+                headers=header,
+                params={"jobid": self._job_id}
             ).json()
-            if result['status'] == 'finished':
+            if result['joblist'][0]['jobstatus'] == 'FINISHED':
                 break
-            if result['status'] == 'error':
+            if result['joblist'][0]['jobstatus'] == 'ERROR':
                 raise JobError('API returned error:\n' + str(result))
+            if result['joblist'][0]['jobstatus'] == 'QUEUED':
+                
+                pass
             time.sleep(wait)
         return result
 

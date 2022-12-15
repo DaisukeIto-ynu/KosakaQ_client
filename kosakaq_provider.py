@@ -10,8 +10,8 @@ import warnings
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
 from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
 from qiskit.providers.jobstatus import JobStatus
-from .exceptions import KosakaQTokenError, KosakaQBackendJobIdError #エラー用のクラス（自作）をインポート
-from .kosakaq_backend import KosakaQBackend 
+from exceptions import KosakaQTokenError, KosakaQBackendJobIdError #エラー用のクラス（自作）をインポート
+from kosakaq_backend import KosakaQBackend 
 from typing import Optional, Union, List, Dict, Any
 from datetime import datetime as python_datetime
 

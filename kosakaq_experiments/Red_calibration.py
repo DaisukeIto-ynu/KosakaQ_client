@@ -122,7 +122,8 @@ class Red_calibration():
             cou_y = self._make_fitting(job_num)   # 縦軸の値
         elif self.mode[job_num - 1] == "Ey":
             peak_x[0] = Ey
-            peak_x[1]= Ey
+            peak_x[1] = Ey
+            peak_y[0] = 
         elif self.mode[job_num - 1] == "E1E2":
             peak_x[0] = E1E2
             peak_x[1] = E1E2
