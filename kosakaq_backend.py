@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 17 15:00:00 2022
-
 @author: Yokohama National University, Kosaka Lab
 """
 import warnings
@@ -131,4 +130,5 @@ class KosakaQBackend(Backend):
         if 'id' not in response:
             raise Exception
         job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
+
         return job
