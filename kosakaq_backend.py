@@ -17,8 +17,8 @@ from qiskit.transpiler import Target
 from qiskit.providers.models import BackendConfiguration
 from qiskit.exceptions import QiskitError
 
-from . import kosakaq_job
-from . import circuit_to_kosakaq
+import kosakaq_job
+import circuit_to_kosakaq
 
 class KosakaQBackend(Backend):
 
