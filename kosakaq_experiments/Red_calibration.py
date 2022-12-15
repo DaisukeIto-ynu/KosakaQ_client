@@ -120,29 +120,43 @@ class Red_calibration():
         if fitting == True:   # optionでfittingするか選べる ← fitingのlistには_make_fittingメソッドを使って下さい。
             self._make_fitting(job_num)
             cou_y = self._make_fitting(job_num)   # 縦軸の値
+        elif self.mode[job_num - 1] == "Ey":
+            peak_x[0] = Ey
+            peak_x[1]= Ey
+        elif self.mode[job_num - 1] == "E1E2":
+            peak_x[0] = E1E2
+            peak_x[1] = E1E2
+        elif self.mode[job_num - 1] == "all":
+            peak_x[0] = E1E2
+            peak_x[1] = Ey
         
         fre_x = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸の値
         # optionでエラーバーいれるか選べる。
         # 参考文献: https://dreamer-uma.com/errorbar-python/
-        cou_y_mean = np.array(cou_y.mean())   # 各点を平均値とする
-        if error == 1:   # 範囲をエラーバーとしたグラフ
-            cou_yerr_scope = np.array(cou_y.max() - cou_y.min())   #データの範囲
-            fig, ax = plt.subplots()
-            ax.plot(fre_x, cou_y, marker='o')
-            ax.errorbar(fre_x, cou_y_mean, cou_yerr=cou_yerr_scope)
-            ax.set_title('PLE - error bar: scope')
-        elif error == 2:   # 標準偏差をエラーバーとしたグラフ
-            cou_yerr_sd = np.array(cou_y.std())   #標準偏差
-            fig, ax = plt.subplots()
-            ax.plot(fre_x, cou_y, marker='o')
-            ax.errorbar(fre_x, cou_y_mean, cou_yerr=cou_yerr_sd)
-            ax.set_title('PLE - error bar: SD')
-        elif error == 3:   # 標準誤差をエラーバーとしたグラフ
-            cou_yerr_se = np.array(cou_y.std() / np.sqrt(len(cou_y)))   #標準偏差
-            fig, ax = plt.subplots()
-            ax.plot(fre_x, cou_y, marker='o')
-            ax.errorbar(fre_x, cou_y_mean, cou_yerr=cou_yerr_se)
-            ax.set_title('PLE - error bar: SE')
+        
+        if peak[0] == peak[1]:
+            i = 1
+        else:
+            i =2
+        for j in range(i):
+            if error == 1:   # 範囲をエラーバーとしたグラフ
+                cou_yerr_scope = np.array(cou_y.max() - cou_y.min())   #データの範囲
+                fig, ax = plt.subplots()
+                ax.plot(fre_x, cou_y, marker='o')
+                ax.errorbar(peak_x[j], peak_y[j], cou_yerr=cou_yerr_scope)
+                ax.set_title('PLE - error bar: scope')
+            elif error == 2:   # 標準偏差をエラーバーとしたグラフ
+                cou_yerr_sd = np.array(cou_y.std())   #標準偏差
+                fig, ax = plt.subplots()
+                ax.plot(fre_x, cou_y, marker='o')
+                ax.errorbar(peak_x[j], peak_y[j], cou_yerr=cou_yerr_sd)
+                ax.set_title('PLE - error bar: SD')
+            elif error == 3:   # 標準誤差をエラーバーとしたグラフ
+                cou_yerr_se = np.array(cou_y.std() / np.sqrt(len(cou_y)))   #標準偏差
+                fig, ax = plt.subplots()
+                ax.plot(fre_x, cou_y, marker='o')
+                ax.errorbar(peak_x[j], peak_y[j], cou_yerr=cou_yerr_se)
+                ax.set_title('PLE - error bar: SE')
         ax.set_xlabel('count')
         ax.set_xlabel('frequency')
         plt.show()
