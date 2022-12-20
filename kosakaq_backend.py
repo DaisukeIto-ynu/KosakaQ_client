@@ -120,10 +120,9 @@ class KosakaQBackend(Backend):
         if out_shots > self.configuration().max_shots:
             raise ValueError('Number of shots is larger than maximum '
                              'number of shots')
-        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(
-            circuit, self._provider.access_token, shots=out_shots)[0]
+        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
         header = {
-            "Ocp-Apim-Subscription-Key": self._provider.access_token,
+            "Authorization": "token " + self._provider.access_token,
             "SDK": "qiskit"
         }
         res = requests.post(self.url, data=kosakaq_json, headers=header)
@@ -131,5 +130,5 @@ class KosakaQBackend(Backend):
         response = res.json()
         if 'id' not in response:
             raise Exception
-        job = kosakaq_job.KosakaQJob(self, response['id'], qobj=circuit)
+        job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
         return job

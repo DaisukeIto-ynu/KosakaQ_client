@@ -159,3 +159,7 @@ class Rabi_calibration():
             self.save(job_num)
         
         # その他、optionを入れる。optionは引数にするが、あくまでoptionなので、選ばなくても良いようにする。
+
+
+        def _make_fitting(self, job_num = 0):
+            pass
