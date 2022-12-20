@@ -17,6 +17,7 @@ from job.job_monitor import job_monitor
 
 
 
+
 class Rabi_calibration():
     def __init__(self, backend: KosakaQbackend):
         self.backend = backend
@@ -26,6 +27,7 @@ class Rabi_calibration():
         self.mode = []
         self.calibration = []
         self.result = []
+
 
 
     def run(self, mode):  # 大輔が作ります
@@ -47,6 +49,7 @@ class Rabi_calibration():
         return self.job[-1]  # result[0]=frequencyのlist, result[1]=count（縦軸), result[2] = エラーバーのlist
 
 
+
     def jobs(self):
         if self.job_num == 0:
             print("There is no job.")
@@ -58,6 +61,7 @@ class Rabi_calibration():
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: done")
 
 
+
     # author: Goto Kyosuke
     def get_result(self, job_num = 0):  # job_num = 0にすることで、使うとき job_num-1 = -1 となり、最新のが使える。
         """
@@ -65,6 +69,7 @@ class Rabi_calibration():
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
             raise KosakaQRabicalibrationError
+
         
         if self.flag[-1]["get_result"] == True:
             print("Already executed")
@@ -96,8 +101,9 @@ class Rabi_calibration():
         # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
 
 
-    # author: Mori Yugo
-    def draw(self, fitting=False, error=0, Ey=False, E1E2=False, save=False, job_num = 0):
+
+    # author: Mori Yugo　#rabi用に変更が必要
+    def draw(self, fitting=False, error=0, save=False, job_num = 0):
         """
         This function draws photoluminescence excitation (PLE).
         
@@ -107,10 +113,6 @@ class Rabi_calibration():
            1.範囲をエラーバーとするグラフを表示
            2.標準偏差をエラーバーとするグラフを表示
            3.標準誤差をエラーバーとするグラフを表示
-        Ey: True or false
-           Eyの中心値を表示するか選ぶ
-        E1E2: True or false
-           E1E2の中心値を表示するか選ぶ
         save: True or false
            Ey, E1E2を保存するか選べる
         """
@@ -150,16 +152,60 @@ class Rabi_calibration():
         ax.set_xlabel('frequency')
         plt.show()
         
-        if Ey == True:   # optionでE1E2,Eyの中心値を表示するか選べる。 ← 中心値にはcalibrationメソッドを使ってください。
-            self.calibration(job_num)
-        if E1E2 == True:
-            self.calibration(job_num)
-        
         if save == True:   # optionで保存するか選べる。(保存とは何の保存を意味しているのか？)
             self.save(job_num)
+
+
+
+    def save(self, job_num = 0):  # jsonにE1とExEy保存する。
+        if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
+            raise KosakaQRabicalibrationError
+        if self.flag[job_num-1]["calibration"] == False:
+            raise KosakaQRabicalibrationError
+        try:
+            with open("calibration_data.json", "r") as json_file:
+                json_data = json.load(json_file)
+        except:
+            json_data = {}
+            json_data["red"] = {}
+        if self.mode[job_num-1] == "Ey" or self.mode[job_num-1] == "all":
+            json_data["red"]["Ey"] = self.calibration[job_num-1]["Ey"]
+        if self.mode[job_num-1] == "E1E2" or self.mode[job_num-1] == "all":
+            json_data["red"]["E1E2"] = self.calibration[job_num-1]["E1E2"]
+        with open("calibration_data.json", "w") as json_file:
+            json.dump(json_data,json_file)
+
+
+
+    # author: Ebihara Syo
+    def _make_fitting(self, job_num = 0):
         
-        # その他、optionを入れる。optionは引数にするが、あくまでoptionなので、選ばなくても良いようにする。
-
-
-        def _make_fitting(self, job_num = 0):
-            pass
+        if self.mode[job_num - 1] == None:  # runを実行してなかった場合
+            raise KosakaQRabicalibrationError('runが実行されていません')
+            
+        elif self.mode[job_num - 1] == "rabi":
+            T = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸の値
+            Y = copy.deepcopy[self.result[job_num - 1][1]]  # 縦軸の値
+            
+            #フィッティング関数の初期値　beta
+            beta = np.array([300, 300])
+            tolerance =  1e-4
+            epsilon = 1e-4
+            
+            delta = 2*tolerance
+            alpha = 1
+            while np.linalg.norm(delta) > tolerance:
+                F = Y-beta[0]*(1-np.cos(beta[1]*T))
+                J = np.zeros((len(F), len(beta)))  # 有限差分ヤコビアン
+                for jj in range(0, len(beta)):
+                    dBeta = np.zeros(beta.shape)
+                    dBeta[jj] = epsilon
+                    J[:, jj] = (Y-(beta[0]+dBeta[0])*(1-np.cos((beta[1]+dBeta[1])*T))-F)/epsilon
+                delta = -np.linalg.pinv(J).dot(F)  # 探索方向
+                beta = beta + alpha*delta
+            
+            # Y2はフィッティング後の縦軸のリスト
+            Y2 = beta[0](1-np.cos(beta[1]*T))
+            return Y2
+        
+        

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 17 15:00:00 2022
-
 @author: Yokohama National University, Kosaka Lab
 """
 import warnings
@@ -18,8 +17,8 @@ from qiskit.transpiler import Target
 from qiskit.providers.models import BackendConfiguration
 from qiskit.exceptions import QiskitError
 
-from . import kosakaq_job
-from . import circuit_to_kosakaq
+import kosakaq_job
+import circuit_to_kosakaq
 
 class KosakaQBackend(Backend):
 
@@ -120,15 +119,16 @@ class KosakaQBackend(Backend):
         if out_shots > self.configuration().max_shots:
             raise ValueError('Number of shots is larger than maximum '
                              'number of shots')
-        kosakaq_json = circuit_to_kosakaq.circuit_to_kosakaq(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
+        kosakaq_json = circuit_to_kosakaq.circuit_to_KosakaQ(circuit, self._provider.access_token, shots=out_shots, backend=self.name)[0]
         header = {
             "Authorization": "token " + self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.post(self.url, data=kosakaq_json, headers=header)
+        res = requests.post(self.url+r"/job/", data=kosakaq_json, headers=header)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
             raise Exception
         job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
+
         return job

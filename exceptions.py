@@ -66,7 +66,7 @@ class KosakaQProviderError(KosakaQAccountError):
 
 
 class KosakaQTokenError(KosakaQProviderError):
-     """Errors for APItoken mistakes"""
+    """Errors for APItoken mistakes"""
     pass
 
 
@@ -94,6 +94,9 @@ class KosakaQBackendValueError(KosakaQBackendError, ValueError):
 class KosakaQBackendJobLimitError(KosakaQBackendError):
     """Errors raised when job limit is reached."""
     pass
+
+class KosakaQBackendJobIdError(KosakaQBackendError):
+    """Error for JobId mistakes."""
 
 
 class KosakaQInputValueError(KosakaQError):
