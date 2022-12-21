@@ -51,8 +51,7 @@ class KosakaQJob(JobV1):
                 break
             if result['joblist'][0]['jobstatus'] == 'ERROR':
                 raise JobError('API returned error:\n' + str(result))
-            if result['joblist'][0]['jobstatus'] == 'QUEUED':
-                
+            if result['joblist'][0]['jobstatus'] == 'QUEUED':        
                 pass
             time.sleep(wait)
         return result
@@ -96,7 +95,7 @@ class KosakaQJob(JobV1):
 
     def _format_counts(self, samples):
         counts = {}
-        for result in samples:
+        for result in range(samples):
             h_result = self._rearrange_result(result)
             if h_result not in counts:
                 counts[h_result] = 1
@@ -119,8 +118,8 @@ class KosakaQJob(JobV1):
         results = [
             {
                 'success': True,
-                'shots': len(result['samples']),
-                'data': {'counts': self._format_counts(result['samples'])},
+                'shots': result['qobjlist'][0][0]['shots'],
+                'data': {'counts': self._format_counts(result['qobjlist'][0][0]['shots'])},
                 'header': {'memory_slots': self.qobj.num_clbits,
                            'name': self.qobj.name,
                            'metadata': self.qobj.metadata}
@@ -155,13 +154,13 @@ class KosakaQJob(JobV1):
         """Query for the job status.
         """
         header = {
-            "Ocp-Apim-Subscription-Key": self._backend._provider.access_token,
-            "SDK": "qiskit"
+            "Authorization": "Token "+self.access_token
         }
-        result = requests.put(self._backend.url,
-                              data={'id': self._job_id,
-                                    'access_token': self.access_token},
-                              headers=header)
+        result = requests.get(
+            self._backend.url + ('/job/'),
+            headers=header,
+            params={"jobid": self._job_id}
+        )
         code = result.status_code
 
         if code == 100:
