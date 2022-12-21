@@ -34,4 +34,4 @@ qc.draw()
 
 job = backend.run(qc)
 
-print(provider.__eq__(other),"\n")
+print(job.get_counts())
