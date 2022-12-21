@@ -8,9 +8,9 @@ Created on Thu Nov 17 15:00:00 2022
 import requests
 from qiskit.providers import ProviderV1 as Provider #抽象クラスのインポート
 from qiskit.providers.exceptions import QiskitBackendNotFoundError #エラー用のクラスをインポート
-from .exceptions import KosakaQTokenError, KosakaQBackendJobIdError, KosakaQBackendValueError #エラー用のクラス（自作）をインポート
-from .kosakaq_backend import KosakaQBackend 
-from .kosakaq_job import KosakaQJob
+from exceptions import KosakaQTokenError, KosakaQBackendJobIdError, KosakaQBackendFilterError #エラー用のクラス（自作）をインポート
+from kosakaq_backend import KosakaQBackend 
+from kosakaq_job import KosakaQJob
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 
 class KosakaQProvider(Provider): #抽象クラスからの継承としてproviderクラスを作る
@@ -76,11 +76,12 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         Raises:
             KosakaQBackendJobIdError: もしjobの取得に失敗した場合、ID間違いのせいにする
         """
-        res = requests.get(self.url + self.jobson, headers={"Authorization": "Token " + self.access_token}, params={"jobid": self.job._job_id})
+        res = requests.get(self.url + self.jobson, headers={"Authorization": "Token " + self.access_token}, params={"jobid": job_id})
         response = res.json()#辞書型{bkedlist,jobist,qobjlist}
-        if response['joblist']['jobid'] == job_id:
+        print(response)
+        if response['joblist'][0]['jobid'] == job_id:
             for i in range(len(response['bkedlist'])):
-                if response['bkedlist'][i]['bkedid'] == response['joblist']['bkedid']:
+                if response['bkedlist'][i]['bkedid'] == response['joblist'][0]['bkedid']:
                     bkedname = response['bkedlist'][i]['bkedname']
             backend = KosakaQBackend(self, bkedname, self.url, response['bkedlist'][i]['bkedversion'], response['bkedlist'][i]['bkednqubits'], 4096, 1)  
             #量子レジスタqを生成する。
@@ -88,7 +89,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
             #古典レジスタcを生成する
             c = ClassicalRegister(2)
             qc = QuantumCircuit(q, c)
-            string = response['qobjlist']['gates']
+            string = response['qobjlist'][0][0]['gates']
             gateslist = eval(string) #gatelist=["H","X"]
             for gate_name in gateslist:
                 if gate_name == "I":
@@ -112,7 +113,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
                 else:
                     pass
                 
-            return KosakaQJob(backend, response['joblist']['jobid'], self.access_token, qc)
+            return KosakaQJob(backend, response['joblist'][0]['jobid'], self.access_token, qc)
         else:
             raise KosakaQBackendJobIdError('Job_id was wrong')
      
@@ -153,24 +154,24 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         戻り値:
            条件に合うjobのリスト
         Raises:
-           KosakaQBackendValueError: キーワード値が認識されない場合 (でも、メソッド内で使われてない)
+           KosakaQBackendFilterError: キーワード値が認識されない場合 (でも、メソッド内で使われてない)
         """
         jobs_list = [] #返す用のリスト
         res = requests.get(self.url + self.jobson, headers={"Authorization": "Token " + self.access_token})
         response = res.json()#辞書型{bkedlist(ラビ、ユニコーン),jobist(jobnumがjobの数だけ),qobjlist(qobjnumがqobjの数だけ、ゲートもたくさん)}
-        
+        print(response)
         for i in range(len(response['joblist'])):
-            if response['joblist'][i][0] == begtime:
-                if response['joblist'][i][1] == bkedid:
-                    if response['joblist'][i][2] == fintime:
-                        if response['joblist'][i][4] == job_num:
-                            if response['joblist'][i][5] == jobid:
-                                if response['joblist'][i][6] == jobstatus:
-                                    if response['joblist'][i][7] == note:
-                                        if response['joblist'][i][8] == posttime:
-                                            if response['joblist'][i][9] == qobjid:
-                                                if response['joblist'][i][10] == userid:
-                                                    bked_id = response['joblist'][i][1]#代入用bkedid
+            if response['joblist'][i]['begtime'] == begtime:
+                if response['joblist'][i]['bkedid'] == bkedid:
+                    if response['joblist'][i]['fintime'] == fintime:
+                        if response['joblist'][i]['job_num'] == job_num:
+                            if response['joblist'][i]['jobid'] == jobid:
+                                if response['joblist'][i]['jobstatus'] == jobstatus:
+                                    if response['joblist'][i]['note'] == note:
+                                        if response['joblist'][i]['posttime'] == posttime:
+                                            if response['joblist'][i]['qobjid'] == qobjid:
+                                                if response['joblist'][i]['userid'] == userid:
+                                                    bked_id = response['joblist'][i]['bkedid']#代入用bkedid
                                                     bked_posi =bked_id-1 #代入用バックエンド番号
                                                     backend = KosakaQBackend(self, response['bkedlist'][bked_posi]['bkedname'], self.url, response['bkedlist'][bked_posi]['bkedversion'], response['bkedlist'][bked_posi]['bkednqubits'], 4096, 1)
                                                     #量子レジスタqを生成する。
@@ -203,7 +204,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
                                                             pass
                                                     jobs_list.insert(i, KosakaQJob(backend, response['joblist'][i]['jobid'], self.access_token, qc))
         if len(jobs_list) == 0:
-            raise KosakaQBackendValueError('key word was wrong')
+            raise KosakaQBackendFilterError('Filter was Error')
         return jobs_list
                 
  

@@ -15,7 +15,7 @@ from exceptions.exceptions import RedCalibrationError, KosakaQRedcalibrationErro
 from KosakaQbackend import KosakaQbackend
 from job.job_monitor import job_monitor
 
-class Red_calibration():
+class ODMR_calibration():
     def __init__(self, backend: KosakaQbackend):
         self.backend = backend
         self.mode = None
@@ -55,7 +55,6 @@ class Red_calibration():
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: done")
              
 
-    # author: Goto Kyosuke
     def get_result(self, job_num = 0):  # job_num = 0にすることで、使うとき job_num-1 = -1 となり、最新のが使える。
         """
         This function gets results of Red-raser calibration.
@@ -93,8 +92,7 @@ class Red_calibration():
         # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
 
 
-    # author: Mori Yugo
-    def draw(self, fitting=False, error=0, Ey=False, E1E2=False, save=False, job_num = 0):
+    def draw(self, fitting=False, error=0, Ey=False, E1E2=False, save=False, job_num = 0):#書き換えが必要
         """
         This function draws photoluminescence excitation (PLE).
         
@@ -122,8 +120,7 @@ class Red_calibration():
             cou_y = self._make_fitting(job_num)   # 縦軸の値
         elif self.mode[job_num - 1] == "Ey":
             peak_x[0] = Ey
-            peak_x[1] = Ey
-            peak_y[0] = 
+            peak_x[1]= Ey
         elif self.mode[job_num - 1] == "E1E2":
             peak_x[0] = E1E2
             peak_x[1] = E1E2
@@ -273,7 +270,7 @@ class Red_calibration():
             json.dump(json_data,json_file)
 
     # author: Ebihara Syo
-    def _make_fitting(self, job_num = 0):
+    def _make_fitting(self, job_num = 0):#書き換えが必要(ガウシアンでフィッティング)
         #E1,E2はエラーを返す
         #Eyについてのfitingのlistを返す（ローレンチアン）、x0とγをself.x0とself.gammaに代入
         #runをまだ実行してなかったら(self.mode == None)、エラーを返す。
@@ -338,3 +335,5 @@ class Red_calibration():
             # Ey2_countはフィッティング後の縦軸のリスト
             Ey2_count = beta[0]+beta[1]/(beta[2]+pow(fre_y2+beta[3],2))
             return Ey2_count
+
+    

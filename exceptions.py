@@ -97,6 +97,10 @@ class KosakaQBackendJobLimitError(KosakaQBackendError):
 
 class KosakaQBackendJobIdError(KosakaQBackendError):
     """Error for JobId mistakes."""
+    
+
+class KosakaQBackendFilterError(KosakaQBackendError):
+    """Error for filter."""
 
 
 class KosakaQInputValueError(KosakaQError):
@@ -121,6 +125,15 @@ class KosakaQRedcalibrationError(KosakaQError):
 
 class RedCalibrationError(KosakaQError):
     """Error raised when red calibration is not done correctly."""
+    pass
+
+
+class KosakaQRabicalibrationError(KosakaQError):
+    """Error raised in Rabi_calibration.py."""
+    pass
+
+class RabiCalibrationError(KosakaQError):
+    """Error raised when rabi calibration is not done correctly."""
     pass
 
 

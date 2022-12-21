@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 17 15:00:00 2022
-
 @author: Yokohama National University, Kosaka Lab
 """
 import warnings
@@ -18,8 +17,8 @@ from qiskit.transpiler import Target
 from qiskit.providers.models import BackendConfiguration
 from qiskit.exceptions import QiskitError
 
-from . import kosakaq_job
-from . import circuit_to_kosakaq
+import kosakaq_job
+import circuit_to_kosakaq
 
 class KosakaQBackend(Backend):
 
@@ -131,4 +130,5 @@ class KosakaQBackend(Backend):
         if 'id' not in response:
             raise Exception
         job = kosakaq_job.KosakaQJob(self, response['id'], access_token=self.provider.access_token, qobj=circuit)
+
         return job
