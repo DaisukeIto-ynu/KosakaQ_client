@@ -34,4 +34,8 @@ qc.draw()
 
 job = backend.run(qc)
 
+<<<<<<< HEAD
 print(job.get_counts())
+=======
+print(job.get_counts())
+>>>>>>> bef4e6984912b2bf0dd3e348dd546637dbdc3930
