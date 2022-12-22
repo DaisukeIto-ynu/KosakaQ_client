@@ -30,11 +30,35 @@ class Red_calibration():
         mode: Ey or E1E2 or all
         どの周りのスペクトルを取るか選べる。
         """
+        
+        access_token = backend.provider.access_token
         self.result.append([])   # Rabi_project20_E6EL06_area06_NV04_PLE_all_0.txtの内容が入ったlistを返します。
         # self.power = []  #周波数 vs.laser_power
         if not(mode == "Ey" or mode == "E1E2" or mode == "all"):
             raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
-        self.job.append(self.backend.run("red"+mode))
+        if mode == "all":
+            data = "PLE 470464000 470484000"
+        elif mode == "E1E2":
+            data = "PLE 470466500 470467800"
+        elif mode == "E1E2":
+            data = "PLE 470472600 470473200"
+        else:
+            # raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
+            pass
+        kosakaq_json ={
+                'experiment': 'experiment',
+                'data': data,
+                'access_token': access_token,
+                'repetitions': 1,
+                'backend': backend.name,
+        }
+        header = {
+            "Authorization": "token " + access_token,
+        }
+        res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
+        res.raise_for_status()
+        response = res.json()
+        self.job.append(kosakaq_job.KosakaQJob(backend, response['id'], access_token=backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
         self.mode.append(mode)
         self.flag.append({})  # 各種Flag
@@ -55,7 +79,7 @@ class Red_calibration():
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: done")
              
 
-    # author: Goto Kyosuke
+    # author: Goto Kyosuke and Daisuke Ito
     def get_result(self, job_num = 0):  # job_num = 0にすることで、使うとき job_num-1 = -1 となり、最新のが使える。
         """
         This function gets results of Red-raser calibration.
@@ -81,7 +105,14 @@ class Red_calibration():
                 
         while (not (self.job[job_num-1].status() == JobStatus.DONE)):
             if nowstatus == JobStatus.DONE: # status:doneだったら/なったら、result取ってくる。
-                result = self.job[job_num-1].result() #resultはResultクラスのインスタンス
+                header = {
+                    "Authorization": "token " + access_token,
+                }
+                res = requests.get("http://192.168.11.85/job/", params={"jobid":jobjob[job_num-1]._job_id}, headers=header)
+                res.raise_for_status()
+                response = res.json()
+                context = response["result"].split("\n")
+                result[job_num-1] = [con.split("\t") for con in context]
             time.sleep(random.randrange(8, 12, 1))
         
         self.flag[job_num-1]["get_result"] = True
