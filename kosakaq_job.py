@@ -219,8 +219,8 @@ class KosakaQExperimentJob(JobV1):
         """
         result = self._wait_for_result(timeout, wait)
         data = result["qobjlist"][0][0]["result"]
-        datalist = data.split("\n")
-        self.result = [data.split("\t") for data in datalist]
+        datalist = [data.split("\t") for data in data.split("\n")]
+        self.result = [[data[i] for data in datalist] for i in range(len(datalist[0]))]
         
         return self.result
 
