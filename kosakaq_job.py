@@ -83,26 +83,6 @@ class KosakaQJob(JobV1):
                     qu2cl[qubit_map[qubit]] = clbit_map[instruction[2][index]]
         return qu2cl
 
-    def _rearrange_result(self, input):
-        length = self.qobj.num_clbits
-        bin_output = list('0' * length)
-        bin_input = list(bin(input)[2:].rjust(length, '0'))
-        bin_input.reverse()
-        for qu, cl in self.memory_mapping.items():
-            bin_output[cl] = bin_input[qu]
-        bin_output.reverse()
-        return hex(int(''.join(bin_output), 2))
-
-    def _format_counts(self, samples):
-        counts = {}
-        for result in range(samples):
-            h_result = self._rearrange_result(result)
-            if h_result not in counts:
-                counts[h_result] = 1
-            else:
-                counts[h_result] += 1
-        return counts
-
     def result(self,
                timeout=None,
                wait=5):
@@ -119,7 +99,7 @@ class KosakaQJob(JobV1):
             {
                 'success': True,
                 'shots': result['qobjlist'][0][0]['shots'],
-                'data': {'counts': self._format_counts(result['qobjlist'][0][0]['shots'])},
+                'data': {'counts': {'0x0': result['qobjlist'][0][0]['result'][:3], '0x1': result['qobjlist'][0][0]['result'][4:7]}},
                 'header': {'memory_slots': self.qobj.num_clbits,
                            'name': self.qobj.name,
                            'metadata': self.qobj.metadata}
@@ -146,9 +126,6 @@ class KosakaQJob(JobV1):
             dict: Dictionary of string : int key-value pairs.
         """
         return self.result(timeout=timeout, wait=wait).get_counts(circuit)
-
-    def cancel(self):
-        pass
 
     def status(self):
         """Query for the job status.
