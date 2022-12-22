@@ -11,12 +11,15 @@ import sys
 sys.path.append("..")
 import matplotlib.pyplot as plt  #ここイランかも
 import numpy as np
-from exceptions.exceptions import RedCalibrationError, KosakaQRedcalibrationError
-from KosakaQbackend import KosakaQbackend
-from job.job_monitor import job_monitor
+from exceptions import RedCalibrationError, KosakaQRedcalibrationError
+from kosakaq_backend import KosakaQBackend
+from kosakaq_job import KosakaQExperimentJob
+
+from qiskit.providers.ibmq.job.job_monitor import job_monitor
+import requests
 
 class Red_calibration():
-    def __init__(self, backend: KosakaQbackend):
+    def __init__(self, backend: KosakaQBackend):
         self.backend = backend
         self.mode = None
         self.job_num = 0
@@ -31,11 +34,9 @@ class Red_calibration():
         どの周りのスペクトルを取るか選べる。
         """
         
-        access_token = backend.provider.access_token
+        access_token = self.backend.provider.access_token
         self.result.append([])   # Rabi_project20_E6EL06_area06_NV04_PLE_all_0.txtの内容が入ったlistを返します。
         # self.power = []  #周波数 vs.laser_power
-        if not(mode == "Ey" or mode == "E1E2" or mode == "all"):
-            raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
         if mode == "all":
             data = "PLE 470464000 470484000"
         elif mode == "E1E2":
@@ -43,22 +44,22 @@ class Red_calibration():
         elif mode == "E1E2":
             data = "PLE 470472600 470473200"
         else:
-            # raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
-            pass
+            raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
         kosakaq_json ={
                 'experiment': 'experiment',
                 'data': data,
                 'access_token': access_token,
                 'repetitions': 1,
-                'backend': backend.name,
+                'backend': self.backend.name,
         }
         header = {
             "Authorization": "token " + access_token,
         }
         res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
-        res.raise_for_status()
         response = res.json()
-        self.job.append(kosakaq_job.KosakaQJob(backend, response['id'], access_token=backend.provider.access_token, qobj=data))
+        print(response)
+        res.raise_for_status()
+        self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
         self.mode.append(mode)
         self.flag.append({})  # 各種Flag
@@ -84,42 +85,32 @@ class Red_calibration():
         """
         This function gets results of Red-raser calibration.
         """
+        access_token = self.backend.provider.access_token
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
             raise KosakaQRedcalibrationError
         
         if self.flag[-1]["get_result"] == True:
             print("Already executed")
         
-        # job_status確認して表示
-        nowstatus = self.job[job_num-1].status()
-        print(nowstatus.value)
+        # # job_status確認して表示
+        # nowstatus = self.job[job_num-1].status()
+        # print(nowstatus.value)
         
-        # status:queuedだったら、何番目か表示して、このまま待つか聞いて、待つようだったらjob monitor表示
-        if nowstatus == JobStatus.QUEUED:
-            print("You're job number is ",self.job[job_num-1].queue_position())
-            ans = input("Do you wait? y/n:")
-            if ans == "y" or "yes":
-                job_monitor()
-            else:
-                raise KosakaQRedcalibrationError
+        # # status:queuedだったら、何番目か表示して、このまま待つか聞いて、待つようだったらjob monitor表示
+        # if nowstatus == JobStatus.QUEUED:
+        #     print("You're job number is ",self.job[job_num-1].queue_position())
+        #     ans = input("Do you wait? y/n:")
+        #     if ans == "y" or "yes":
+        #         job_monitor()
+        #     else:
+        #         raise KosakaQRedcalibrationError
                 
-        while (not (self.job[job_num-1].status() == JobStatus.DONE)):
-            if nowstatus == JobStatus.DONE: # status:doneだったら/なったら、result取ってくる。
-                header = {
-                    "Authorization": "token " + access_token,
-                }
-                res = requests.get("http://192.168.11.85/job/", params={"jobid":jobjob[job_num-1]._job_id}, headers=header)
-                res.raise_for_status()
-                response = res.json()
-                context = response["result"].split("\n")
-                result[job_num-1] = [con.split("\t") for con in context]
-            time.sleep(random.randrange(8, 12, 1))
+        self.result[job_num-1] = self.job[job_num-1].result()
         
         self.flag[job_num-1]["get_result"] = True
         
-        self.result[job_num-1].append(result._get_experiment())
         
-        return result._get_experiment()
+        return self.result[job_num-1]
         
         # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
 
@@ -154,7 +145,7 @@ class Red_calibration():
         elif self.mode[job_num - 1] == "Ey":
             peak_x[0] = Ey
             peak_x[1] = Ey
-            peak_y[0] = 
+            # peak_y[0] = 
         elif self.mode[job_num - 1] == "E1E2":
             peak_x[0] = E1E2
             peak_x[1] = E1E2
@@ -254,9 +245,9 @@ class Red_calibration():
                 a, b = katamuki(x, y)#a,bに傾きと切片代入
                 list4.append(a)#リストに傾き代入
                 i = i+1#カウント＋１する
-            for #list4回して、マイナスになったインデックスから極地のHzのためのインデックスを求める
+            # for #list4回して、マイナスになったインデックスから極地のHzのためのインデックスを求める
                 
-        elif self.mode[job_num-1] == "all"
+        elif self.mode[job_num-1] == "all":
             i = 0#whileのためのカウント用i
             while i<= 491:#501個なので491まで
                 
@@ -275,6 +266,7 @@ class Red_calibration():
                 i = i+1#カウント＋１する
         elif self.mode[job_num-1] == "Ey":
             #Eyは_make_fittingのself.x0を返す。
+            pass
         else:
             print("error")
         #list1,2,3で頂点の探し方を考える。範囲絞っての最大値or極値

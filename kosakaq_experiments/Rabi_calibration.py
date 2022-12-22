@@ -11,7 +11,7 @@ import sys
 sys.path.append("..")
 import matplotlib.pyplot as plt  #ここイランかも
 import numpy as np
-from exceptions.exceptions import RabiCalibrationError, KosakaQRabicalibrationError
+from exceptions import RabiCalibrationError, KosakaQRabicalibrationError
 from KosakaQbackend import KosakaQbackend
 from job.job_monitor import job_monitor
 

@@ -135,8 +135,4 @@ class KosakaQRabicalibrationError(KosakaQError):
 class RabiCalibrationError(KosakaQError):
     """Error raised when rabi calibration is not done correctly."""
     pass
-<<<<<<< HEAD
-=======
 
-
->>>>>>> 94390f8a53970000b93eecbe89fb7e1f4cd5ccf7
