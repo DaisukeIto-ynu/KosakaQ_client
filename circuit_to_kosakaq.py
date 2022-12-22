@@ -23,7 +23,7 @@ def _experiment_to_seq(circuit):
         
         qubits = [qubit_map[bit] for bit in instruction[1]]
         """
-        if inst.name == 'i':
+        if inst.name == 'id':
             name = 'I'
         elif inst.name == 'x':
             name = 'X'
