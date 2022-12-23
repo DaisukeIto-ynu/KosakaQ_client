@@ -23,7 +23,7 @@ c = ClassicalRegister(1)
 #量子レジスタqと古典レジスタc間で量子回路を生成する。
 qc = QuantumCircuit(q, c)
 #1番目の量子ビットにHゲートをかける。
-qc.h(q[0])
+qc.i(q[0])
 #1番目の量子ビットにXゲートをかける。
 qc.x(q[0])
 
@@ -34,8 +34,3 @@ qc.draw()
 
 job = backend.run(qc)
 
-<<<<<<< HEAD
-print(job.get_counts())
-=======
-print(job.get_counts())
->>>>>>> bef4e6984912b2bf0dd3e348dd546637dbdc3930

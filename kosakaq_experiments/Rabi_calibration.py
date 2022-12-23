@@ -11,15 +11,16 @@ import sys
 sys.path.append("..")
 import matplotlib.pyplot as plt  #ここイランかも
 import numpy as np
-from exceptions.exceptions import RabiCalibrationError, KosakaQRabicalibrationError
-from KosakaQbackend import KosakaQbackend
-from job.job_monitor import job_monitor
+from exceptions import RabiCalibrationError, KosakaQRabicalibrationError
+from kosakaq_backend import KosakaQBackend
+from kosakaq_job import KosakaQExperimentJob
 
+import requests
 
 
 
 class Rabi_calibration():
-    def __init__(self, backend: KosakaQbackend):
+    def __init__(self, backend: KosakaQBackend):
         self.backend = backend
         self.mode = None
         self.job_num = 0
@@ -29,26 +30,38 @@ class Rabi_calibration():
         self.result = []
 
 
-
-    def run(self, mode):  # 大輔が作ります
+    
+    def run(self, start, stop, Amp):  # 大輔が作ります
         """
         mode: Ey or E1E2 or all
         どの周りのスペクトルを取るか選べる。
         """
+        
+        access_token = self.backend.provider.access_token
         self.result.append([])   # Rabi_project20_E6EL06_area06_NV04_PLE_all_0.txtの内容が入ったlistを返します。
-        # self.power = []  #周波数 vs.laser_power
-        if not(mode == "Ey" or mode == "E1E2" or mode == "all"):
-            raise KosakaQRabicalibrationError('choose mode from "Ey" or "E1E2" or "all"')
-        self.job.append(self.backend.run("red"+mode))
+        data = "Rabi " + str(start) + " " + str(stop) + " " + str(Amp)
+        kosakaq_json ={
+                'experiment': 'experiment',
+                'data': data,
+                'access_token': access_token,
+                'repetitions': 1,
+                'backend': self.backend.name,
+        }
+        header = {
+            "Authorization": "token " + access_token,
+        }
+        res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
+        response = res.json()
+        print(response)
+        res.raise_for_status()
+        self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
-        self.mode.append(mode)
         self.flag.append({})  # 各種Flag
         self.flag[-1]["get_result"] = False
         self.flag[-1]["calibration"] = False
         self.flag[-1]["fitting"] = False
         return self.job[-1]  # result[0]=frequencyのlist, result[1]=count（縦軸), result[2] = エラーバーのlist
-
-
+    
 
     def jobs(self):
         if self.job_num == 0:
@@ -59,44 +72,25 @@ class Rabi_calibration():
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: not yet")
                 else:
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: done")
+             
 
-
-
-    # author: Goto Kyosuke
+    # author: Goto Kyosuke and Daisuke Ito
     def get_result(self, job_num = 0):  # job_num = 0にすることで、使うとき job_num-1 = -1 となり、最新のが使える。
         """
         This function gets results of Red-raser calibration.
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
             raise KosakaQRabicalibrationError
-
         
         if self.flag[-1]["get_result"] == True:
             print("Already executed")
-        
-        # job_status確認して表示
-        nowstatus = self.job[job_num-1].status()
-        print(nowstatus.value)
-        
-        # status:queuedだったら、何番目か表示して、このまま待つか聞いて、待つようだったらjob monitor表示
-        if nowstatus == JobStatus.QUEUED:
-            print("You're job number is ",self.job[job_num-1].queue_position())
-            ans = input("Do you wait? y/n:")
-            if ans == "y" or "yes":
-                job_monitor()
-            else:
-                raise KosakaQRabicalibrationError
-                
-        while (not (self.job[job_num-1].status() == JobStatus.DONE)):
-            if nowstatus == JobStatus.DONE: # status:doneだったら/なったら、result取ってくる。
-                result = self.job[job_num-1].result() #resultはResultクラスのインスタンス
-            time.sleep(random.randrange(8, 12, 1))
+                        
+        self.result[job_num-1] = self.job[job_num-1].result()
         
         self.flag[job_num-1]["get_result"] = True
         
-        self.result[job_num-1].append(result._get_experiment())
-        
-        return result._get_experiment()
+        # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
+        return self.result[job_num-1]
         
         # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
 
@@ -108,13 +102,13 @@ class Rabi_calibration():
         This function draws photoluminescence excitation (PLE).
         
         fitting: True or false
-           フィッティングするか選ぶ
+            フィッティングするか選ぶ
         error: 0, 1, 2 or 3
-           1.範囲をエラーバーとするグラフを表示
-           2.標準偏差をエラーバーとするグラフを表示
-           3.標準誤差をエラーバーとするグラフを表示
+            1.範囲をエラーバーとするグラフを表示
+            2.標準偏差をエラーバーとするグラフを表示
+            3.標準誤差をエラーバーとするグラフを表示
         save: True or false
-           Ey, E1E2を保存するか選べる
+            Ey, E1E2を保存するか選べる
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):   #get resultにデータがあるか
             raise KosakaQRabicalibrationError

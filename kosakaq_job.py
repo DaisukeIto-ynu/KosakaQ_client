@@ -95,11 +95,12 @@ class KosakaQJob(JobV1):
             Result: Result object.
         """
         result = self._wait_for_result(timeout, wait)
+        counts = result['qobjlist'][0][0]['result'].split("\n")
         results = [
             {
                 'success': True,
                 'shots': result['qobjlist'][0][0]['shots'],
-                'data': {'counts': {'0x0': result['qobjlist'][0][0]['result'][:3], '0x1': result['qobjlist'][0][0]['result'][4:7]}},
+                'data': {'counts': {'0x0': counts[0], '0x1': counts[1]}},
                 'header': {'memory_slots': self.qobj.num_clbits,
                            'name': self.qobj.name,
                            'metadata': self.qobj.metadata}
@@ -133,18 +134,116 @@ class KosakaQJob(JobV1):
         header = {
             "Authorization": "Token "+self.access_token
         }
-        result = requests.get(
+        res = requests.get(
             self._backend.url + ('/job/'),
             headers=header,
             params={"jobid": self._job_id}
-        )
-        code = result.status_code
+        ).json()
+        code = res["joblist"][0]["jobstatus"]
 
-        if code == 100:
+        if code == "RUNNING":
             status = JobStatus.RUNNING
-        elif code == 200:
+        elif code == "FINISHED":
             status = JobStatus.DONE
-        elif code in [201, 202]:
+        elif code =="INITIALIZING":
+            status = JobStatus.INITIALIZING
+        else:
+            status = JobStatus.ERROR
+        return status
+
+    def submit(self):
+        """Submits a job for execution.
+        :class:`.AQTJob` does not support standalone submission of a job
+        object. This can not be called and the Job is only submitted via
+        the ``run()`` method of the backend
+        :raises NotImplementedError: This method does not support calling
+            ``submit()``
+        """
+        raise NotImplementedError
+    
+    def backend(self):
+        return self._backend
+
+
+class KosakaQExperimentJob(JobV1):
+    def __init__(self, backend, job_id, access_token=None, qobj=None):
+        """Initialize a job instance.
+        Parameters:
+            backend (BaseBackend): Backend that job was executed on.
+            job_id (str): The unique job ID.
+            access_token (str): The AQT access token.
+            qobj (Qobj): Quantum object, if any.
+        """
+        super().__init__(backend, job_id)
+        self._backend = backend
+        self.access_token = access_token
+        self.qobj = qobj
+        self._job_id = job_id
+
+    def _wait_for_result(self, timeout=None, wait=5):
+        if wait < 5:
+            raise JobError('Wait time must be 5 or more')
+        start_time = time.time()
+        result = None
+        header = {
+            "Authorization": "Token "+self.access_token
+        }
+        while True:
+            elapsed = time.time() - start_time
+            if timeout and elapsed >= timeout:
+                raise JobTimeoutError('Timed out waiting for result')
+            result = requests.get(
+                self._backend.url + ('/job/'),
+                headers=header,
+                params={"jobid": self._job_id}
+            ).json()
+            if result['joblist'][0]['jobstatus'] == 'FINISHED':
+                break
+            if result['joblist'][0]['jobstatus'] == 'ERROR':
+                raise JobError('API returned error:\n' + str(result))
+            if result['joblist'][0]['jobstatus'] == 'QUEUED':        
+                pass
+            time.sleep(wait)
+        return result
+
+
+    def result(self,
+               timeout=None,
+               wait=5):
+        """Get the result data of a circuit.
+        Parameters:
+            timeout (float): A timeout for trying to get the counts.
+            wait (float): A specified wait time between counts retrival
+                          attempts.
+        Returns:
+            Result: Result object.
+        """
+        result = self._wait_for_result(timeout, wait)
+        data = result["qobjlist"][0][0]["result"]
+        datalist = [data.split("\t") for data in data.split("\n")]
+        self.result = [[data[i] for data in datalist] for i in range(len(datalist[0]))]
+        
+        return self.result
+
+
+    def status(self):
+        """Query for the job status.
+        """
+        header = {
+            "Authorization": "Token "+self.access_token
+        }
+        res = requests.get(
+            self._backend.url + ('/job/'),
+            headers=header,
+            params={"jobid": self._job_id}
+        ).json()
+        code = res["joblist"][0]["jobstatus"]
+
+        if code == "RUNNING":
+            status = JobStatus.RUNNING
+        elif code == "FINISHED":
+            status = JobStatus.DONE
+        elif code =="INITIALIZING":
             status = JobStatus.INITIALIZING
         else:
             status = JobStatus.ERROR
