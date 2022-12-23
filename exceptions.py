@@ -135,8 +135,12 @@ class KosakaQRabicalibrationError(KosakaQError):
 class RabiCalibrationError(KosakaQError):
     """Error raised when rabi calibration is not done correctly."""
     pass
-<<<<<<< HEAD
-=======
 
+class KosakaQODMRcalibrationError(KosakaQError):
+    """Error raised in ODMR_calibration.py"""
+    pass
 
->>>>>>> 94390f8a53970000b93eecbe89fb7e1f4cd5ccf7
+class ODMRCalibrationError(KosakaQError):
+    """Error raised when ODMR calibration is not done correctly."""
+    pass
+
