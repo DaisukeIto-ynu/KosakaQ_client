@@ -97,110 +97,110 @@ class Rabi_calibration():
 
 
 
-    # author: Mori Yugo　#rabi用に変更が必要
-    def draw(self, fitting=False, error=0, save=False, job_num = 0):
-        """
-        This function draws photoluminescence excitation (PLE).
+    # # author: Mori Yugo　#rabi用に変更が必要
+    # def draw(self, fitting=False, error=0, save=False, job_num = 0):
+    #     """
+    #     This function draws photoluminescence excitation (PLE).
         
-        fitting: True or false
-           フィッティングするか選ぶ
-        error: 0, 1, 2 or 3
-           1.範囲をエラーバーとするグラフを表示
-           2.標準偏差をエラーバーとするグラフを表示
-           3.標準誤差をエラーバーとするグラフを表示
-        save: True or false
-           Ey, E1E2を保存するか選べる
-        """
-        if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):   #get resultにデータがあるか
-            raise KosakaQRabicalibrationError
+    #     fitting: True or false
+    #        フィッティングするか選ぶ
+    #     error: 0, 1, 2 or 3
+    #        1.範囲をエラーバーとするグラフを表示
+    #        2.標準偏差をエラーバーとするグラフを表示
+    #        3.標準誤差をエラーバーとするグラフを表示
+    #     save: True or false
+    #        Ey, E1E2を保存するか選べる
+    #     """
+    #     if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):   #get resultにデータがあるか
+    #         raise KosakaQRabicalibrationError
         
-        if self.mode[job_num-1] == None:   # runをまだ実行してなかったら(self.mode == None)、エラーを返す。（これは最初でやるべき？）
-            raise KosakaQRabicalibrationError("Run function is not done.")
+    #     if self.mode[job_num-1] == None:   # runをまだ実行してなかったら(self.mode == None)、エラーを返す。（これは最初でやるべき？）
+    #         raise KosakaQRabicalibrationError("Run function is not done.")
         
-        if fitting == True:   # optionでfittingするか選べる ← fitingのlistには_make_fittingメソッドを使って下さい。
-            self._make_fitting(job_num)
-            fre_y = self._make_fitting(job_num)   # 縦軸の値
+    #     if fitting == True:   # optionでfittingするか選べる ← fitingのlistには_make_fittingメソッドを使って下さい。
+    #         self._make_fitting(job_num)
+    #         fre_y = self._make_fitting(job_num)   # 縦軸の値
         
-        cou_x = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸の値
-        # optionでエラーバーいれるか選べる。
-        # 参考文献: https://dreamer-uma.com/errorbar-python/
-        fre_y_mean = np.array(fre_y.mean())   # 各点を平均値とする
-        if error == 1:   # 範囲をエラーバーとしたグラフ
-            fre_yerr_scope = np.array(fre_y.max() - fre_y.min())   #データの範囲
-            fig, ax = plt.subplots()
-            ax.plot(cou_x, fre_y, marker='o')
-            ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_scope)
-            ax.set_title('PLE - error bar: scope')
-        elif error == 2:   # 標準偏差をエラーバーとしたグラフ
-            fre_yerr_sd = np.array(fre_y.std())   #標準偏差
-            fig, ax = plt.subplots()
-            ax.plot(cou_x, fre_y, marker='o')
-            ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_sd)
-            ax.set_title('PLE - error bar: SD')
-        elif error == 3:   # 標準誤差をエラーバーとしたグラフ
-            fre_yerr_se = np.array(fre_y.std() / np.sqrt(len(fre_y)))   #標準偏差
-            fig, ax = plt.subplots()
-            ax.plot(cou_x, fre_y, marker='o')
-            ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_se)
-            ax.set_title('PLE - error bar: SE')
-        ax.set_xlabel('count')
-        ax.set_xlabel('frequency')
-        plt.show()
+    #     cou_x = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸の値
+    #     # optionでエラーバーいれるか選べる。
+    #     # 参考文献: https://dreamer-uma.com/errorbar-python/
+    #     fre_y_mean = np.array(fre_y.mean())   # 各点を平均値とする
+    #     if error == 1:   # 範囲をエラーバーとしたグラフ
+    #         fre_yerr_scope = np.array(fre_y.max() - fre_y.min())   #データの範囲
+    #         fig, ax = plt.subplots()
+    #         ax.plot(cou_x, fre_y, marker='o')
+    #         ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_scope)
+    #         ax.set_title('PLE - error bar: scope')
+    #     elif error == 2:   # 標準偏差をエラーバーとしたグラフ
+    #         fre_yerr_sd = np.array(fre_y.std())   #標準偏差
+    #         fig, ax = plt.subplots()
+    #         ax.plot(cou_x, fre_y, marker='o')
+    #         ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_sd)
+    #         ax.set_title('PLE - error bar: SD')
+    #     elif error == 3:   # 標準誤差をエラーバーとしたグラフ
+    #         fre_yerr_se = np.array(fre_y.std() / np.sqrt(len(fre_y)))   #標準偏差
+    #         fig, ax = plt.subplots()
+    #         ax.plot(cou_x, fre_y, marker='o')
+    #         ax.errorbar(cou_x, fre_y_mean, fre_yerr=fre_yerr_se)
+    #         ax.set_title('PLE - error bar: SE')
+    #     ax.set_xlabel('count')
+    #     ax.set_xlabel('frequency')
+    #     plt.show()
         
-        if save == True:   # optionで保存するか選べる。(保存とは何の保存を意味しているのか？)
-            self.save(job_num)
+    #     if save == True:   # optionで保存するか選べる。(保存とは何の保存を意味しているのか？)
+    #         self.save(job_num)
 
 
 
-    def save(self, job_num = 0):  # jsonにE1とExEy保存する。
-        if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
-            raise KosakaQRabicalibrationError
-        if self.flag[job_num-1]["calibration"] == False:
-            raise KosakaQRabicalibrationError
-        try:
-            with open("calibration_data.json", "r") as json_file:
-                json_data = json.load(json_file)
-        except:
-            json_data = {}
-            json_data["red"] = {}
-        if self.mode[job_num-1] == "Ey" or self.mode[job_num-1] == "all":
-            json_data["red"]["Ey"] = self.calibration[job_num-1]["Ey"]
-        if self.mode[job_num-1] == "E1E2" or self.mode[job_num-1] == "all":
-            json_data["red"]["E1E2"] = self.calibration[job_num-1]["E1E2"]
-        with open("calibration_data.json", "w") as json_file:
-            json.dump(json_data,json_file)
+    # def save(self, job_num = 0):  # jsonにE1とExEy保存する。
+    #     if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
+    #         raise KosakaQRabicalibrationError
+    #     if self.flag[job_num-1]["calibration"] == False:
+    #         raise KosakaQRabicalibrationError
+    #     try:
+    #         with open("calibration_data.json", "r") as json_file:
+    #             json_data = json.load(json_file)
+    #     except:
+    #         json_data = {}
+    #         json_data["red"] = {}
+    #     if self.mode[job_num-1] == "Ey" or self.mode[job_num-1] == "all":
+    #         json_data["red"]["Ey"] = self.calibration[job_num-1]["Ey"]
+    #     if self.mode[job_num-1] == "E1E2" or self.mode[job_num-1] == "all":
+    #         json_data["red"]["E1E2"] = self.calibration[job_num-1]["E1E2"]
+    #     with open("calibration_data.json", "w") as json_file:
+    #         json.dump(json_data,json_file)
 
 
 
-    # author: Ebihara Syo
-    def _make_fitting(self, job_num = 0):
+    # # author: Ebihara Syo
+    # def _make_fitting(self, job_num = 0):
         
-        if self.mode[job_num - 1] == None:  # runを実行してなかった場合
-            raise KosakaQRabicalibrationError('runが実行されていません')
+    #     if self.mode[job_num - 1] == None:  # runを実行してなかった場合
+    #         raise KosakaQRabicalibrationError('runが実行されていません')
             
-        elif self.mode[job_num - 1] == "rabi":
-            T = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸の値
-            Y = copy.deepcopy[self.result[job_num - 1][1]]  # 縦軸の値
+    #     elif self.mode[job_num - 1] == "rabi":
+    #         T = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸の値
+    #         Y = copy.deepcopy[self.result[job_num - 1][1]]  # 縦軸の値
             
-            #フィッティング関数の初期値　beta
-            beta = np.array([300, 300])
-            tolerance =  1e-4
-            epsilon = 1e-4
+    #         #フィッティング関数の初期値　beta
+    #         beta = np.array([300, 300])
+    #         tolerance =  1e-4
+    #         epsilon = 1e-4
             
-            delta = 2*tolerance
-            alpha = 1
-            while np.linalg.norm(delta) > tolerance:
-                F = Y-beta[0]*(1-np.cos(beta[1]*T))
-                J = np.zeros((len(F), len(beta)))  # 有限差分ヤコビアン
-                for jj in range(0, len(beta)):
-                    dBeta = np.zeros(beta.shape)
-                    dBeta[jj] = epsilon
-                    J[:, jj] = (Y-(beta[0]+dBeta[0])*(1-np.cos((beta[1]+dBeta[1])*T))-F)/epsilon
-                delta = -np.linalg.pinv(J).dot(F)  # 探索方向
-                beta = beta + alpha*delta
+    #         delta = 2*tolerance
+    #         alpha = 1
+    #         while np.linalg.norm(delta) > tolerance:
+    #             F = Y-beta[0]*(1-np.cos(beta[1]*T))
+    #             J = np.zeros((len(F), len(beta)))  # 有限差分ヤコビアン
+    #             for jj in range(0, len(beta)):
+    #                 dBeta = np.zeros(beta.shape)
+    #                 dBeta[jj] = epsilon
+    #                 J[:, jj] = (Y-(beta[0]+dBeta[0])*(1-np.cos((beta[1]+dBeta[1])*T))-F)/epsilon
+    #             delta = -np.linalg.pinv(J).dot(F)  # 探索方向
+    #             beta = beta + alpha*delta
             
-            # Y2はフィッティング後の縦軸のリスト
-            Y2 = beta[0](1-np.cos(beta[1]*T))
-            return Y2
+    #         # Y2はフィッティング後の縦軸のリスト
+    #         Y2 = beta[0](1-np.cos(beta[1]*T))
+    #         return Y2
         
         

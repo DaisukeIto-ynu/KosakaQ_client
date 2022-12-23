@@ -11,7 +11,7 @@ import sys
 sys.path.append("..")
 import matplotlib.pyplot as plt  #ここイランかも
 import numpy as np
-from exceptions.exceptions import RedCalibrationError, KosakaQRedcalibrationError
+from exceptions.exceptions import RedCalibrationError, KosakaQODMRcalibrationError
 from KosakaQbackend import KosakaQbackend
 from job.job_monitor import job_monitor
 
@@ -25,18 +25,37 @@ class ODMR_calibration():
         self.calibration = []
         self.result = []
     
-    def run(self, mode):  # 大輔が作ります
+    
+    def run(self, start, stop, HighPower = False):  # 大輔が作ります
         """
         mode: Ey or E1E2 or all
         どの周りのスペクトルを取るか選べる。
         """
+        
+        access_token = self.backend.provider.access_token
         self.result.append([])   # Rabi_project20_E6EL06_area06_NV04_PLE_all_0.txtの内容が入ったlistを返します。
-        # self.power = []  #周波数 vs.laser_power
-        if not(mode == "Ey" or mode == "E1E2" or mode == "all"):
-            raise KosakaQRedcalibrationError('choose mode from "Ey" or "E1E2" or "all"')
-        self.job.append(self.backend.run("red"+mode))
+        if HighPower == False:
+            data = "ODMR " + str(start) + " " + str(stop) + " " + str(8947) + " " + str(0.001)
+        elif HighPower == True:
+            data = "ODMR " + str(start) + " " + str(stop) + " " + str(21) + " " + str(0.5)
+        else:
+            raise KosakaQODMRcalibrationError("argument HighPower must be bool")
+        kosakaq_json ={
+                'experiment': 'experiment',
+                'data': data,
+                'access_token': access_token,
+                'repetitions': 1,
+                'backend': self.backend.name,
+        }
+        header = {
+            "Authorization": "token " + access_token,
+        }
+        res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
+        response = res.json()
+        print(response)
+        res.raise_for_status()
+        self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
-        self.mode.append(mode)
         self.flag.append({})  # 各種Flag
         self.flag[-1]["get_result"] = False
         self.flag[-1]["calibration"] = False
@@ -55,41 +74,26 @@ class ODMR_calibration():
                     print("job",i+1,"... ","mode: ",self.mode[i], " get_result: done")
              
 
+    # author: Goto Kyosuke and Daisuke Ito
     def get_result(self, job_num = 0):  # job_num = 0にすることで、使うとき job_num-1 = -1 となり、最新のが使える。
         """
         This function gets results of Red-raser calibration.
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
-            raise KosakaQRedcalibrationError
+            raise KosakaQRabicalibrationError
         
         if self.flag[-1]["get_result"] == True:
             print("Already executed")
-        
-        # job_status確認して表示
-        nowstatus = self.job[job_num-1].status()
-        print(nowstatus.value)
-        
-        # status:queuedだったら、何番目か表示して、このまま待つか聞いて、待つようだったらjob monitor表示
-        if nowstatus == JobStatus.QUEUED:
-            print("You're job number is ",self.job[job_num-1].queue_position())
-            ans = input("Do you wait? y/n:")
-            if ans == "y" or "yes":
-                job_monitor()
-            else:
-                raise KosakaQRedcalibrationError
-                
-        while (not (self.job[job_num-1].status() == JobStatus.DONE)):
-            if nowstatus == JobStatus.DONE: # status:doneだったら/なったら、result取ってくる。
-                result = self.job[job_num-1].result() #resultはResultクラスのインスタンス
-            time.sleep(random.randrange(8, 12, 1))
+                        
+        self.result[job_num-1] = self.job[job_num-1].result()
         
         self.flag[job_num-1]["get_result"] = True
         
-        self.result[job_num-1].append(result._get_experiment())
-        
-        return result._get_experiment()
+        # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
+        return self.result[job_num-1]
         
         # result[job_num-1][0]=frequencyのlist, result[job_num-1][1]=count（縦軸), result[job_num-1][2] = エラーバーのlist
+
 
 
     def draw(self, fitting=False, error=0, Ey=False, E1E2=False, save=False, job_num = 0):#書き換えが必要
