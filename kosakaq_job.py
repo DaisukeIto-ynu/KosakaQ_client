@@ -95,11 +95,12 @@ class KosakaQJob(JobV1):
             Result: Result object.
         """
         result = self._wait_for_result(timeout, wait)
+        counts = result['qobjlist'][0][0]['result'].split("\n")
         results = [
             {
                 'success': True,
                 'shots': result['qobjlist'][0][0]['shots'],
-                'data': {'counts': {'0x0': result['qobjlist'][0][0]['result'][:3], '0x1': result['qobjlist'][0][0]['result'][4:7]}},
+                'data': {'counts': {'0x0': counts[0], '0x1': counts[1]}},
                 'header': {'memory_slots': self.qobj.num_clbits,
                            'name': self.qobj.name,
                            'metadata': self.qobj.metadata}
@@ -142,7 +143,7 @@ class KosakaQJob(JobV1):
 
         if code == "RUNNING":
             status = JobStatus.RUNNING
-        elif code == "FINNISHED":
+        elif code == "FINISHED":
             status = JobStatus.DONE
         elif code =="INITIALIZING":
             status = JobStatus.INITIALIZING
@@ -240,7 +241,7 @@ class KosakaQExperimentJob(JobV1):
 
         if code == "RUNNING":
             status = JobStatus.RUNNING
-        elif code == "FINNISHED":
+        elif code == "FINISHED":
             status = JobStatus.DONE
         elif code =="INITIALIZING":
             status = JobStatus.INITIALIZING
