@@ -25,7 +25,7 @@ qc = QuantumCircuit(q, c)
 #1番目の量子ビットにHゲートをかける。
 qc.i(q[0])
 #1番目の量子ビットにXゲートをかける。
-qc.x(q[0])
+# qc.x(q[0])
 
 #1番目の量子ビットの測定値を1番目の古典ビットに渡す。
 qc.measure(q[0], c[0])
@@ -34,3 +34,4 @@ qc.draw()
 
 job = backend.run(qc)
 
+print(job.get_counts(qc))

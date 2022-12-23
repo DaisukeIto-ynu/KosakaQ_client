@@ -200,7 +200,7 @@ class KosakaQExperimentJob(JobV1):
             if result['joblist'][0]['jobstatus'] == 'FINISHED':
                 break
             if result['joblist'][0]['jobstatus'] == 'ERROR':
-                raise JobError('API returned error:\n' + str(result))
+                raise JobError('JOb Error.')
             if result['joblist'][0]['jobstatus'] == 'QUEUED':        
                 pass
             time.sleep(wait)
@@ -218,12 +218,13 @@ class KosakaQExperimentJob(JobV1):
         Returns:
             Result: Result object.
         """
-        result = self._wait_for_result(timeout, wait)
-        data = result["qobjlist"][0][0]["result"]
+        result_data = self._wait_for_result(timeout, wait)
+        data = result_data["qobjlist"][0][0]["result"]
         datalist = [data.split("\t") for data in data.split("\n")]
-        self.result = [[data[i] for data in datalist] for i in range(len(datalist[0]))]
+        datalist.pop(-1)
+        self.result_data = [[data[i] for data in datalist] for i in range(len(datalist[0]))]
         
-        return self.result
+        return self.result_data
 
 
     def status(self):

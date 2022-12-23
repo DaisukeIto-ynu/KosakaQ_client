@@ -26,6 +26,7 @@ class Red_calibration():
         self.mode = []
         self.calibration = []
         self.result = []
+        self.flag = []
     
     def run(self, mode):  # 大輔が作ります
         """
@@ -56,7 +57,6 @@ class Red_calibration():
         }
         res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
         response = res.json()
-        print(response)
         res.raise_for_status()
         self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
