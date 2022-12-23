@@ -123,13 +123,16 @@ class Red_calibration():
         elif self.mode[job_num - 1] == "Ey":
             peak_x[0] = Ey
             peak_x[1] = Ey
-            peak_y[0] = 
+            peak_y[0] = peak_Ey
         elif self.mode[job_num - 1] == "E1E2":
             peak_x[0] = E1E2
             peak_x[1] = E1E2
+            peak_y[0] = peak_E1E2
         elif self.mode[job_num - 1] == "all":
             peak_x[0] = E1E2
             peak_x[1] = Ey
+            peak_y[0] = peak_E1E2
+            peak_y[1] = peak_Ey
         
         fre_x = copy.deepcopy[self.result[job_num - 1][1]]  # 横軸の値
         # optionでエラーバーいれるか選べる。
