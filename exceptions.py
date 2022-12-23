@@ -144,4 +144,3 @@ class KosakaQODMRcalibrationError(KosakaQError):
 class ODMRCalibrationError(KosakaQError):
     """Error raised when ODMR calibration is not done correctly."""
     pass
-

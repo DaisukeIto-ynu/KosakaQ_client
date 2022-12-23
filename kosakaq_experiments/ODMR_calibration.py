@@ -14,8 +14,9 @@ import numpy as np
 from exceptions import RedCalibrationError, KosakaQODMRcalibrationError
 from kosakaq_backend import KosakaQBackend
 from kosakaq_job import KosakaQExperimentJob
-from job.job_monitor import job_monitor
+
 from scipy.optimize import curve_fit
+
 
 import requests
 
@@ -28,6 +29,7 @@ class ODMR_calibration():
         self.mode = []
         self.calibration = []
         self.result = []
+        self.flag = []
     
     
     def run(self, start, stop, HighPower = False):  # 大輔が作ります
@@ -56,7 +58,6 @@ class ODMR_calibration():
         }
         res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
         response = res.json()
-        print(response)
         res.raise_for_status()
         self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
         self.job_num += 1  # 発行したjobの数
