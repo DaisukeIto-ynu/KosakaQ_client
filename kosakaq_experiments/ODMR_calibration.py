@@ -12,11 +12,14 @@ sys.path.append("..")
 import matplotlib.pyplot as plt  #ここイランかも
 import numpy as np
 from exceptions.exceptions import RedCalibrationError, KosakaQODMRcalibrationError
-from KosakaQbackend import KosakaQbackend
+from kosakaq_backend import KosakaQBackend
+from kosakaq_job import KosakaQExperimentJob
 from job.job_monitor import job_monitor
 
+import requests
+
 class ODMR_calibration():
-    def __init__(self, backend: KosakaQbackend):
+    def __init__(self, backend: KosakaQBackend):
         self.backend = backend
         self.mode = None
         self.job_num = 0
@@ -80,7 +83,7 @@ class ODMR_calibration():
         This function gets results of Red-raser calibration.
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):
-            raise KosakaQRabicalibrationError
+            raise KosakaQODMRcalibrationError
         
         if self.flag[-1]["get_result"] == True:
             print("Already executed")
@@ -101,17 +104,17 @@ class ODMR_calibration():
         This function draws photoluminescence excitation (PLE).
         
         fitting: True or false
-           フィッティングするか選ぶ
+            フィッティングするか選ぶ
         error: 0, 1, 2 or 3
-           1.範囲をエラーバーとするグラフを表示
-           2.標準偏差をエラーバーとするグラフを表示
-           3.標準誤差をエラーバーとするグラフを表示
+            1.範囲をエラーバーとするグラフを表示
+            2.標準偏差をエラーバーとするグラフを表示
+            3.標準誤差をエラーバーとするグラフを表示
         Ey: True or false
-           Eyの中心値を表示するか選ぶ
+            Eyの中心値を表示するか選ぶ
         E1E2: True or false
-           E1E2の中心値を表示するか選ぶ
+            E1E2の中心値を表示するか選ぶ
         save: True or false
-           Ey, E1E2を保存するか選べる
+            Ey, E1E2を保存するか選べる
         """
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):   #get resultにデータがあるか
             raise KosakaQRedcalibrationError
@@ -217,7 +220,7 @@ class ODMR_calibration():
                 def katamuki(x, y):#傾きを求める関数
                     n = 10#10こ区切り
                     a = ((np.dot(x[i:i+n-1], y[i:i+n-1])- y[i:i+n-1].sum() * x[i:i+n-1].sum()/n)/
-                         ((x[i:i+n-1] ** 2).sum() - x[i:i+n-1].sum()**2 / n))#スライシングで10個分の最小二乗法による傾き
+                          ((x[i:i+n-1] ** 2).sum() - x[i:i+n-1].sum()**2 / n))#スライシングで10個分の最小二乗法による傾き
                     b = (y[i:i+n-1].sum() - a * x[i:i+n-1].sum())/n#切片（不要）
                     return a, b
 
@@ -236,7 +239,7 @@ class ODMR_calibration():
                 def katamuki(x, y):#傾きを求める関数
                     n = 10#10こ区切り
                     a = ((np.dot(x[i:i+n-1], y[i:i+n-1])- y[i:i+n-1].sum() * x[i:i+n-1].sum()/n)/
-                         ((x[i:i+n-1] ** 2).sum() - x[i:i+n-1].sum()**2 / n))#スライシングで10個分の最小二乗法による傾き
+                          ((x[i:i+n-1] ** 2).sum() - x[i:i+n-1].sum()**2 / n))#スライシングで10個分の最小二乗法による傾き
                     b = (y[i:i+n-1].sum() - a * x[i:i+n-1].sum())/n#切片（不要）
                     return a, b
 
