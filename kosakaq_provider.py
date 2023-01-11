@@ -19,7 +19,7 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         super().__init__() #ソースコードは（）空なので真似した
         self.access_token = access_token #トークン定義  
         self.name = 'kosakaq_provider' #nameという変数を右辺に初期化、このproviderクラスの名づけ
-        self.url = 'http://192.168.11.85' #リンク変更可能
+        self.url = 'http://192.168.1.82' #リンク変更可能
         self.wjson = '/api/backends.json' #jsonに何を入れてサーバーに送るか
         self.jobson = '/job/'
     
@@ -161,16 +161,16 @@ class KosakaQProvider(Provider): #抽象クラスからの継承としてprovide
         response = res.json()#辞書型{bkedlist(ラビ、ユニコーン),jobist(jobnumがjobの数だけ),qobjlist(qobjnumがqobjの数だけ、ゲートもたくさん)}
         print(response)
         for i in range(len(response['joblist'])):
-            if response['joblist'][i]['begtime'] == begtime:
-                if response['joblist'][i]['bkedid'] == bkedid:
-                    if response['joblist'][i]['fintime'] == fintime:
-                        if response['joblist'][i]['job_num'] == job_num:
-                            if response['joblist'][i]['jobid'] == jobid:
-                                if response['joblist'][i]['jobstatus'] == jobstatus:
-                                    if response['joblist'][i]['note'] == note:
-                                        if response['joblist'][i]['posttime'] == posttime:
-                                            if response['joblist'][i]['qobjid'] == qobjid:
-                                                if response['joblist'][i]['userid'] == userid:
+            if response['joblist'][i]['begtime'] == begtime or response['joblist'][i]['begtime'] == None :
+                if response['joblist'][i]['bkedid'] == bkedid or response['joblist'][i]['bkedid'] == None:
+                    if response['joblist'][i]['fintime'] == fintime or response['joblist'][i]['fintime'] == None:
+                        if response['joblist'][i]['job_num'] == job_num or response['joblist'][i]['job_num'] == None:
+                            if response['joblist'][i]['jobid'] == jobid or response['joblist'][i]['jobid'] == None:
+                                if response['joblist'][i]['jobstatus'] == jobstatus or response['joblist'][i]['jobstatus'] == None:
+                                    if response['joblist'][i]['note'] == note or response['joblist'][i]['note'] == None:
+                                        if response['joblist'][i]['posttime'] == posttime or response['joblist'][i]['posttime'] == None:
+                                            if response['joblist'][i]['qobjid'] == qobjid or response['joblist'][i]['qobjid'] == None:
+                                                if response['joblist'][i]['userid'] == userid or response['joblist'][i]['userid'] == None:
                                                     bked_id = response['joblist'][i]['bkedid']#代入用bkedid
                                                     bked_posi =bked_id-1 #代入用バックエンド番号
                                                     backend = KosakaQBackend(self, response['bkedlist'][bked_posi]['bkedname'], self.url, response['bkedlist'][bked_posi]['bkedversion'], response['bkedlist'][bked_posi]['bkednqubits'], 4096, 1)
