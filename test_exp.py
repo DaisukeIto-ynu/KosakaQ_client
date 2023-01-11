@@ -19,9 +19,9 @@ print(provider.backends(),"\n")
 backend = provider.backends()[0]
 print(backend.name,"\n")
 
-# PLE
-PLE = Red_calibration(backend)
-job_PLE = PLE.run("all")
+# # PLE
+# PLE = Red_calibration(backend)
+# job_PLE = PLE.run("all")
 
 
 # # Rabi
@@ -29,9 +29,9 @@ job_PLE = PLE.run("all")
 # job_Rabi = Rabi.run(0,10000,0.002)
 
 
-# # ODMR
-# ODMR = ODMR_calibration(backend)
-# job_ODMR = ODMR.run(111,120)
+# ODMR
+ODMR = ODMR_calibration(backend)
+job_ODMR = ODMR.run(111,120)
 
 # result = job_PLE.result()
 # pprint.pprint(result)

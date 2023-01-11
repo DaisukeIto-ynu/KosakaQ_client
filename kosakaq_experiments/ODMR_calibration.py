@@ -23,10 +23,8 @@ import requests
 class ODMR_calibration():
     def __init__(self, backend: KosakaQBackend):
         self.backend = backend
-        self.mode = None
         self.job_num = 0
         self.job = []
-        self.mode = []
         self.calibration = []
         self.result = []
         self.flag = []
@@ -56,7 +54,7 @@ class ODMR_calibration():
         header = {
             "Authorization": "token " + access_token,
         }
-        res = requests.post("http://192.168.11.85/job/", data=kosakaq_json, headers=header)
+        res = requests.post("http://192.168.1.82/job/", data=kosakaq_json, headers=header)
         response = res.json()
         res.raise_for_status()
         self.job.append(KosakaQExperimentJob(self.backend, response['id'], access_token=self.backend.provider.access_token, qobj=data))
@@ -118,38 +116,33 @@ class ODMR_calibration():
         if job_num > self.job_num or job_num < 0 or not( type(job_num) == int ):   #get resultにデータがあるか
             raise KosakaQODMRcalibrationError
         
-        if self.mode[job_num-1] == None:   # runをまだ実行してなかったら(self.mode == None)、エラーを返す。（これは最初でやるべき？）
-            raise KosakaQODMRcalibrationError("Run function is not done.")
-        
+              
         if fitting == True:   # optionでfittingするか選べる ← fitingのlistには_make_fittingメソッドを使って下さい。
             self._make_fitting(job_num)
             cou_y = self._make_fitting(job_num)   # 縦軸の値
-        elif fitting == None:
-            cou_y = copy.deepcopy[self.result[job_num - 1][1]]
+        else:
+            cou_y = copy.deepcopy(self.result[job_num - 1][1])
         
-        fre_x = copy.deepcopy[self.result[job_num - 1][0]]  # 横軸の値
+        fre_x = copy.deepcopy(self.result[job_num - 1][0]) # 横軸の値
         min_y = min(cou_y)
         a = cou_y.index(min_y)
         min_x = cou_y[a]
         
         # optionでエラーバーいれるか選べる。
         # 参考文献: https://dreamer-uma.com/errorbar-python/
-        
+        fig, ax = plt.subplots()
         if error == 1:   # 範囲をエラーバーとしたグラフ
             cou_yerr_scope = np.array(cou_y.max() - cou_y.min())   #データの範囲
-            fig, ax = plt.subplots()
             ax.plot(fre_x, cou_y, marker='o')
             ax.errorbar(min_x, min_y, cou_yerr=cou_yerr_scope)
             ax.set_title('PLE - error bar: scope')
         elif error == 2:   # 標準偏差をエラーバーとしたグラフ
             cou_yerr_sd = np.array(cou_y.std())   #標準偏差
-            fig, ax = plt.subplots()
             ax.plot(fre_x, cou_y, marker='o')
             ax.errorbar(min_x, min_y, cou_yerr=cou_yerr_sd)
             ax.set_title('PLE - error bar: SD')
-        elif error == 3:   # 標準誤差をエラーバーとしたグラフ
+        else:   # 標準誤差をエラーバーとしたグラフ
             cou_yerr_se = np.array(cou_y.std() / np.sqrt(len(cou_y)))   #標準偏差
-            fig, ax = plt.subplots()
             ax.plot(fre_x, cou_y, marker='o')
             ax.errorbar(min_x, min_y, cou_yerr=cou_yerr_se)
             ax.set_title('PLE - error bar: SE')
